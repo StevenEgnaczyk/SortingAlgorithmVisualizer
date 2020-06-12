@@ -1,47 +1,108 @@
+import java.awt.*;
 import java.util.ArrayList;
 
 public class pBoard {
     public ArrayList<pixelColor> pList = new ArrayList<>();
-    public pBoard() {
+    public pBoard(int size) {
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+        int screenHeight = screenSize.height;
+        int screenWidth = screenSize.width;
+
+        int pixelHeight = screenHeight;
+        int pixelWidth = 10;
+
+        float r = 0;
+        float g = 0;
+        float b = 0;
         int index = 0;
-        int r = 0;
-        int g = 0;
-        int b = 0;
-        while (r < 255) {
-            pList.add(new pixelColor(r,g,b,index));
+
+        int leftOverPixels;
+        int numberOfElements;
+        float addValue;
+
+        pixelWidth = size;
+
+        leftOverPixels = ((screenWidth/pixelWidth)%7);
+        numberOfElements = ((screenWidth-leftOverPixels)/pixelWidth);
+        System.out.println("NOE" + numberOfElements);
+        addValue = 255/(float)(numberOfElements/7);
+        System.out.println("AV" + addValue);
+
+
+        while(Math.round(r) < 255) {
+            pList.add(new pixelColor((int)r,(int)g,(int)b,index,pixelHeight,pixelWidth));
+            r+=addValue;
+            System.out.println(r + " is red");
             index++;
-            r++;
         }
-        while (g < 255) {
-            pList.add(new pixelColor(r,g,b,index));
+        while (Math.round(g) < 255) {
+            pList.add(new pixelColor((int)r,(int)g,(int)b,index,pixelHeight,pixelWidth));
+            g+=addValue;
             index++;
-            g++;
         }
-        while (r > 0) {
-            pList.add(new pixelColor(r,g,b,index));
+        while (Math.round(r) > 0) {
+            pList.add(new pixelColor((int)r,(int)g,(int)b,index,pixelHeight,pixelWidth));
+            r-=addValue;
             index++;
-            r--;
         }
-        while (b < 255) {
-            pList.add(new pixelColor(r,g,b,index));
+        while (Math.round(b) < 255) {
+            pList.add(new pixelColor((int)r,(int)g,(int)b,index,pixelHeight,pixelWidth));
+            b+=addValue;
             index++;
-            b++;
         }
-        while (g > 0) {
-            pList.add(new pixelColor(r,g,b,index));
+        while (Math.round(g) > 0) {
+            pList.add(new pixelColor((int)r,(int)g,(int)b,index,pixelHeight,pixelWidth));
+            g-=addValue;
             index++;
-            g--;
         }
-        while (r < 255) {
-            pList.add(new pixelColor(r,g,b,index));
+        while (Math.round(r) < 255) {
+            pList.add(new pixelColor((int)r,(int)g,(int)b,index,pixelHeight,pixelWidth));
+            r+=addValue;
             index++;
-            r++;
         }
-        while (g < 255) {
-            pList.add(new pixelColor(r,g,b,index));
+        while (Math.round(g) < 255) {
+            pList.add(new pixelColor((int)r,(int)g,(int)b,index,pixelHeight,pixelWidth));
+            g+=addValue;
             index++;
-            g++;
         }
+        while (leftOverPixels > 0) {
+            pList.add(new pixelColor(255,255,255,index,pixelHeight,pixelWidth));
+            leftOverPixels--;
+            index++;
+        }
+    }
+
+    public pixelColor addRed (pixelColor pColor) {
+        pColor.setR(pColor.getR()+1);
+        pColor.setIndex(pColor.getIndex()+1);
+        return pColor;
+    }
+    public pixelColor subRed (pixelColor pColor) {
+        pColor.setR(pColor.getR()-1);
+        pColor.setIndex(pColor.getIndex()+1);
+        return pColor;
+    }
+    public pixelColor addGreen (pixelColor pColor) {
+        pColor.setG(pColor.getG()+1);
+        pColor.setIndex(pColor.getIndex()+1);
+        return pColor;
+    }
+    public pixelColor subGreen (pixelColor pColor) {
+        pColor.setG(pColor.getG()-1);
+        pColor.setIndex(pColor.getIndex()+1);
+        return pColor;
+    }
+    public pixelColor addBlue (pixelColor pColor) {
+        pColor.setB(pColor.getB()+1);
+        pColor.setIndex(pColor.getIndex()+1);
+        return pColor;
+    }
+    public pixelColor subBlue (pixelColor pColor) {
+        pColor.setB(pColor.getB()-1);
+        pColor.setIndex(pColor.getIndex()+1);
+        return pColor;
     }
 
     public boolean isSorted() {

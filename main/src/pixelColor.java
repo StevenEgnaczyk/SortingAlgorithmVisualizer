@@ -3,12 +3,15 @@ public class pixelColor {
     public int G;
     public int B;
     public int index;
-
-    public pixelColor(int r, int g, int b, int index) {
+    public int height;
+    public int width;
+    public pixelColor(int r, int g, int b, int index, int height, int width) {
         R = r;
         G = g;
         B = b;
         this.index = index;
+        this.height = height;
+        this.width = width;
     }
 
     public int getR() {
@@ -41,5 +44,30 @@ public class pixelColor {
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public String toString() {
+        System.out.println("Red: " + this.getR());
+        System.out.println("Green: " + this.getG());
+        System.out.println("Blue: " + this.getB());
+        System.out.println("Index: " + this.getIndex());
+        return "Done";
     }
 }
