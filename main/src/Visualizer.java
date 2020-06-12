@@ -112,11 +112,11 @@ public class Visualizer extends  JFrame {
         System.out.println("----------------------------------------------");
         System.out.println("(0) - Selection Sort || (7) - Bucket Sort");
         System.out.println("(1) - Insertion Sort || (8) - Shell Sort");
-        System.out.println("(2) - Bubble Sort    || (9) - Counting Sort");
-        System.out.println("(3) - Merge Sort     || (10) - Cube Sort");
-        System.out.println("(4) - Quick Sort     || (11) - Tree Sort");
-        System.out.println("(5) - Heap Sort      || (12) - Tim Sort");
-        System.out.println("(6) - Radix Sort     ||");
+        System.out.println("(2) - Bubble Sort    || (9) - Cocktail Sort");
+        System.out.println("(3) - Merge Sort     || (10) - Counting Sort");
+        System.out.println("(4) - Quick Sort     || (11) - Cube Sort");
+        System.out.println("(5) - Heap Sort      || (12) - Tree Sort");
+        System.out.println("(6) - Radix Sort     || (13) - Tim Sort");
 
         Scanner userChoice = new Scanner(System.in);
         return userChoice.nextInt();
@@ -182,23 +182,68 @@ public class Visualizer extends  JFrame {
                 System.out.println("List Sorted using Sort");
                 break;
             case 9:
+                System.out.println("Running Cocktail Sort");
+                cocktailSort(pcArrayList,g2d,delay);
+                System.out.println("List Sorted using Cocktail Sort");
+                break;
+            case 10:
                 System.out.println("Running Count Sort");
                 countingSort(pcArrayList,g2d,delay);
                 break;
-            case 10:
+            case 11:
                 System.out.println("Running Selection Sort");
                 //Cube Sort
                 break;
-            case 11:
+            case 12:
                 System.out.println("Running Selection Sort");
                 //Tree Sort
                 break;
-            case 12:
+            case 13:
                 System.out.println("Running Selection Sort");
                 //Tim Sort
-                break;
             default:
                 System.out.println("Not a Valid Argument. Try Again");
+        }
+    }
+
+    private void cocktailSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
+
+        boolean swapped = true;
+        int start = 0;
+        int end = whole.size();
+
+        while (swapped) {
+            swapped = false;
+
+            for (int i = start; i < end-1; i++) {
+                if (whole.get(i).getIndex() > whole.get(i+1).getIndex()) {
+                    pixelColor temp = whole.get(i);
+                    whole.set(i,whole.get(i+1));
+                    whole.set(i+1,temp);
+                    swapped = true;
+                    drawPixelBoard(g2d,whole);
+                    wait(delay);
+                }
+            }
+
+            if (!swapped) {
+                break;
+            }
+
+            swapped = false;
+
+            end = end-1;
+
+            for (int i = end-1; i >= start; i--) {
+                if (whole.get(i).getIndex() > whole.get(i+1).getIndex()) {
+                    pixelColor temp = whole.get(i);
+                    whole.set(i,whole.get(i+1));
+                    whole.set(i+1,temp);
+                    swapped = true;
+                    drawPixelBoard(g2d,whole);
+                    wait(delay);
+                }
+            }
         }
     }
 
