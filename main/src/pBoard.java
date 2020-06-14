@@ -26,15 +26,10 @@ public class pBoard {
 
         leftOverPixels = ((screenWidth/pixelWidth)%7);
         numberOfElements = ((screenWidth-leftOverPixels)/pixelWidth);
-        System.out.println("NOE" + numberOfElements);
         addValue = 255/(float)(numberOfElements/7);
-        System.out.println("AV" + addValue);
-
-
         while(Math.round(r) < 255) {
             pList.add(new pixelColor((int)r,(int)g,(int)b,index,pixelHeight,pixelWidth));
             r+=addValue;
-            System.out.println(r + " is red");
             index++;
         }
         while (Math.round(g) < 255) {

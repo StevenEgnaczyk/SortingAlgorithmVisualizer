@@ -1,6 +1,10 @@
+import com.sun.source.tree.TreeVisitor;
+import jdk.dynalink.linker.LinkerServices;
+
 import javax.swing.*;
 import javax.tools.Tool;
 import java.awt.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,8 +45,29 @@ public class Visualizer extends  JFrame {
         for (pixelColor p : pList) {
             //System.out.println(p.toString());
             g2d.setColor(new Color(p.getR(), p.getG(), p.getB()));
-            g2d.drawRect(index, 0, p.getWidth(), p.getHeight());
-            g2d.fillRect(index, 0,p.getWidth(),p.getHeight());
+            g2d.drawRect(index, 75, p.getWidth(), p.getHeight()-75);
+            g2d.fillRect(index, 75,p.getWidth(),p.getHeight()-75);
+            index+=p.getWidth();
+        }
+    }
+
+    void drawPixelBoard(Graphics g2d, ArrayList<pixelColor> pList, String label) {
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenWidth = screenSize.width;
+        int screenHeight = screenSize.height;
+
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0,0,screenWidth, 75);
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("TimesRoman", Font.BOLD, 50));
+        g2d.drawString(label, screenWidth/80, screenHeight/20);
+        int index = 0;
+        for (pixelColor p : pList) {
+            //System.out.println(p.toString());
+            g2d.setColor(new Color(p.getR(), p.getG(), p.getB()));
+            g2d.drawRect(index, 75, p.getWidth(), p.getHeight()-75);
+            g2d.fillRect(index, 75,p.getWidth(),p.getHeight()-75);
             index+=p.getWidth();
         }
     }
@@ -87,9 +112,12 @@ public class Visualizer extends  JFrame {
                     delay = getNewDelay(delay);
                     break;
                 case 3:
+                    size = getNewSize(size);
+                    System.out.println(size);
                     pBoard.pList.clear();
-                    pBoard = new pBoard(getNewSize(size));
-                    drawPixelBoard(g2d,pBoard.pList);
+                    pBoard newPBoard = new pBoard(size);
+                    pBoard.setpList(newPBoard.pList);
+                    drawPixelBoard(g2d,newPBoard.pList);
                 default:
 
                     break;
@@ -112,14 +140,13 @@ public class Visualizer extends  JFrame {
     public int getSortingAlgorithmChoice() {
         System.out.println("Which Sorting Algorithm Would you like to use?");
         System.out.println("----------------------------------------------");
-        System.out.println("(0) - Selection Sort || (8) - Tim Sort");
-        System.out.println("(1) - Insertion Sort || (9) - Bucket Sort");
-        System.out.println("(2) - Gnome Sort     || (10) - Quick Sort");
-        System.out.println("(3) - Shell Sort     || (11) - Bitonic Sort");
-        System.out.println("(4) - Bubble Sort    || (12) - Tree Sort");
-        System.out.println("(5) - Cocktail Sort  || (13) - Heap Sort");
-        System.out.println("(6) - Comb Sort      || (14) - Smooth Sort");
-        System.out.println("(7) - Merge Sort     || (15) - Pidgeonhole Sort");
+        System.out.println("(0) - Selection Sort || (7) - Merge Sort  ");
+        System.out.println("(1) - Insertion Sort || (8) - Bucket Sort");
+        System.out.println("(2) - Gnome Sort     || (9) - Quick Sort");
+        System.out.println("(3) - Shell Sort     || (10) - Bitonic Sort");
+        System.out.println("(4) - Bubble Sort    || (11) - Heap Sort");
+        System.out.println("(5) - Cocktail Sort  || (12) - Cycle Sort");
+        System.out.println("(6) - Comb Sort      ||");
 
         Scanner userChoice = new Scanner(System.in);
         return userChoice.nextInt();
@@ -134,10 +161,15 @@ public class Visualizer extends  JFrame {
     private int getNewSize(int size) {
         System.out.println("Your current pixel Width is " + size + " pixels. What would you like the new size to be?");
         Scanner userChoice = new Scanner(System.in);
-        return userChoice.nextInt();
+        int newSize = userChoice.nextInt();
+        return  newSize;
     }
 
     public void runSortingAlgorithm(int sortingAlgorithmChoice, ArrayList<pixelColor> pcArrayList, Graphics g2d, int delay, int pixelWidth) {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+        int screenHeight = screenSize.height;
+        int screenWidth = screenSize.width;
         switch (sortingAlgorithmChoice) {
             case 0:
                 System.out.println("Running Selection Sort");
@@ -171,7 +203,7 @@ public class Visualizer extends  JFrame {
                 break;
             case 6:
                 System.out.println("Running Comb Sort");
-                //radixSort(pcArrayList, pcArrayList.size(), g2d, delay);
+                combSort(pcArrayList, g2d, delay);
                 System.out.println("List sorted using Comb Sort");
                 break;
             case 7:
@@ -180,43 +212,191 @@ public class Visualizer extends  JFrame {
                 System.out.println("List sorted using Bubble Sort");;
                 break;
             case 8:
-                System.out.println("Running Tim Sort");
-                //bucketSort(pcArrayList, pcArrayList.size()/10, g2d, delay, pixelWidth);
-                System.out.println("List sorted using Tim Sort");
-                break;
-            case 9:
                 System.out.println("Running Bucket Sort");
-                bucketSort(pcArrayList, pcArrayList.size()/10, g2d, delay, pixelWidth);
+                bucketSort(pcArrayList, 10, screenWidth, g2d, delay, pixelWidth);
                 System.out.println("List sorted using Bucket Sort");
                 break;
-            case 10:
+            case 9:
                 System.out.println("Running Quick Sort");
                 quickSort(pcArrayList,0,pcArrayList.size()-1,g2d,delay);
                 System.out.println("List sorted using Quick Sort");
-            case 11:
+                break;
+            case 10:
                 System.out.println("Running Bitonic Sort");
-                //quickSort(pcArrayList,0,pcArrayList.size()-1,g2d,delay);
+                bitonicSort(pcArrayList,0,pcArrayList.size(),0, g2d,delay);
                 System.out.println("List sorted using Bitonic Sort");
                 break;
-            case 12:
-                System.out.println("Running Tree Sort");
-                //heapSort(pcArrayList, g2d, delay);
-                System.out.println("List sorted using Tree Sort");
-                break;
-            case 13:
+            case 11:
                 System.out.println("Running Heap Sort");
                 heapSort(pcArrayList, g2d, delay);
                 System.out.println("List sorted using Heap Sort");
-            case 14:
-                System.out.println("Running Smooth Sort");
-                //heapSort(pcArrayList, g2d, delay);
-                System.out.println("List sorted using Smooth Sort");
-            case 15:
-                System.out.println("Running Pidgeonhole Sort");
-                heapSort(pcArrayList, g2d, delay);
-                System.out.println("List sorted using Pidgeonhole Sort");
+                break;
+            case 12:
+                System.out.println("Running Cycle Sort");
+                cycleSort(pcArrayList, g2d, delay);
+                System.out.println("List sorted using Cycle Sort");
+                break;
             default:
                 System.out.println("Not a Valid Argument. Try Again");
+                break;
+        }
+    }
+
+    public void selectionSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
+
+        int comparisons = 0;
+        int swaps = 0;
+
+        int n = whole.size();
+        int jLocation;
+        int minLocation;
+
+        for (int i = 0; i < n - 1; i++) {
+            int minIndex = whole.get(i).getIndex();
+            minLocation = whole.get(minIndex).getIndex();
+            for (int j = i + 1; j < n; j++) {
+                jLocation = whole.get(j).getIndex();
+                comparisons++;
+                if (jLocation < minLocation) {
+                    drawPixelBoard(g2d, whole, "Selection Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+                    minIndex = j;
+                    minLocation = whole.get(minIndex).getIndex();
+                }
+            }
+
+            pixelColor tempPixel = whole.get(minIndex);
+            pixelColor currentBottom = whole.get(i);
+
+            whole.set(minIndex, currentBottom);
+            drawPixelBoard(g2d,whole, "Selection Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+            wait(delay);
+
+            whole.set(i, tempPixel);
+            drawPixelBoard(g2d,whole, "Selection Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+            wait(delay);
+
+            swaps++;
+            drawPixelBoard(g2d, whole, "Selection Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+        }
+        System.out.println(swaps + " Swaps Made");
+        System.out.println(comparisons + " Comparisons Made");
+    }
+
+    public void insertionSort(ArrayList<pixelColor> pList, Graphics g2d, int delay) {
+
+        int comparisons = 0;
+        int swaps = 0;
+
+        int n = pList.size();
+        for (int i = 1; i < n; i++) {
+            pixelColor key = pList.get(i);
+            int j = i - 1;
+
+            while (j >= 0 && pList.get(j).getIndex() > key.getIndex()) {
+
+                comparisons++;
+                swaps++;
+
+                pList.set(j + 1, pList.get(j));
+                j = j - 1;
+
+                drawPixelBoard(g2d, pList,  "Insertion Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+                wait(delay);
+            }
+
+            pList.set(j + 1, key);
+
+            swaps++;
+
+            drawPixelBoard(g2d,pList, "Insertion Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+            wait(delay);
+        }
+        System.out.println(swaps + " Swaps Made");
+        System.out.println(comparisons + " Comparisons Made");
+    }
+
+    public void gnomeSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
+
+        int n = whole.size();
+
+        int index = 0;
+
+        while (index < n) {
+            if (index == 0)
+                index++;
+            if (whole.get(index).getIndex() >= whole.get(index-1).getIndex())
+                index++;
+            else {
+                pixelColor temp;
+                temp = whole.get(index);
+
+                whole.set(index, whole.get(index-1));
+                drawPixelBoard(g2d, whole);
+                wait(delay);
+
+                whole.set(index-1, temp);
+                drawPixelBoard(g2d, whole);
+                wait(delay);
+
+                index--;
+            }
+        }
+    }
+
+    public void shellSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
+        int n = whole.size();
+
+        for(int gap = (n/2); gap > 0; gap/=2) {
+            for (int i = gap; i < n; i+=1) {
+                pixelColor temp = whole.get(i);
+
+                int j;
+                for(j = i; j >= gap && whole.get(j-gap).getIndex() > temp.getIndex(); j-= gap) {
+                    whole.set(j,whole.get(j-gap));
+                    drawPixelBoard(g2d,whole);
+                    wait(delay);
+                }
+                whole.set(j,temp);
+            }
+        }
+    }
+
+    public void combineLists(ArrayList[] lists, Graphics g2d, int delay) {
+        ArrayList<pixelColor> whole = new ArrayList<>();
+        for(ArrayList<pixelColor> list: lists) {
+            for(pixelColor p : list) {
+                whole.add(p);
+                wait(delay);
+                drawPixelBoard(g2d,whole);
+            }
+        }
+    }
+
+    public void bubbleSort(ArrayList<pixelColor> pList, Graphics g2d, int delay) {
+        for (int i = 0; i < pList.size() - 1; i++) {
+            for (int j = 0; j < pList.size() - i - 1; j++) {
+                if (pList.get(j).getIndex() > pList.get(j + 1).getIndex()) {
+                    pixelColor tempColor = pList.get(j + 1);
+                    pList.set(j + 1, pList.get(j));
+                    pList.set(j, tempColor);
+                }
+            }
+            drawPixelBoard(g2d,pList);
+            wait(delay);
+        }
+    }
+
+    public void bubbleSort(ArrayList<pixelColor> pList, Graphics g2d, int delay, int offset) {
+        for (int i = 0; i < pList.size() - 1; i++) {
+            for (int j = 0; j < pList.size() - i - 1; j++) {
+                if (pList.get(j).getIndex() > pList.get(j + 1).getIndex()) {
+                    pixelColor tempColor = pList.get(j + 1);
+                    pList.set(j + 1, pList.get(j));
+                    pList.set(j, tempColor);
+                }
+            }
+            drawPixelBoard(g2d,pList, offset);
+            wait(delay);
         }
     }
 
@@ -261,78 +441,38 @@ public class Visualizer extends  JFrame {
         }
     }
 
-    public void selectionSort(ArrayList<pixelColor> pList, Graphics g2d, int delay) {
-
-        int n = pList.size();
-        int jLocation;
-        int minLocation;
-
-        for (int i = 0; i < n - 1; i++) {
-            int minIndex = pList.get(i).getIndex();
-            minLocation = pList.get(minIndex).getIndex();
-            for (int j = i + 1; j < n; j++) {
-                jLocation = pList.get(j).getIndex();
-                if (jLocation < minLocation) {
-                    drawPixelBoard(g2d, pList);
-                    minIndex = j;
-                    minLocation = pList.get(minIndex).getIndex();
-                }
-            }
-            pixelColor tempPixel = pList.get(minIndex);
-            pixelColor currentBottom = pList.get(i);
-
-            pList.set(minIndex, currentBottom);
-            pList.set(i, tempPixel);
-
-            drawPixelBoard(g2d,pList);
-
-            wait(delay);
-        }
+    public int getNextGap(int gap) {
+        gap = (gap*10)/13;
+        return Math.max(gap, 1);
     }
 
-    public void insertionSort(ArrayList<pixelColor> pList, Graphics g2d, int delay) {
-        int n = pList.size();
-        for (int i = 1; i < n; i++) {
-            pixelColor key = pList.get(i);
-            int j = i - 1;
+    public void combSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
+        int n = whole.size();
 
-            while (j >= 0 && pList.get(j).getIndex() > key.getIndex()) {
-                pixelColor currentColor = pList.get(j);
-                pixelColor replaceingColor = pList.get(j + 1);
-                pList.set(j + 1, pList.get(j));
-                j = j - 1;
-            }
-            wait(delay);
-            pList.set(j + 1, key);
-            drawPixelBoard(g2d,pList);
-        }
-    }
+        int gap = n;
 
-    public void bubbleSort(ArrayList<pixelColor> pList, Graphics g2d, int delay) {
-        for (int i = 0; i < pList.size() - 1; i++) {
-            for (int j = 0; j < pList.size() - i - 1; j++) {
-                if (pList.get(j).getIndex() > pList.get(j + 1).getIndex()) {
-                    pixelColor tempColor = pList.get(j + 1);
-                    pList.set(j + 1, pList.get(j));
-                    pList.set(j, tempColor);
+        boolean swapped = true;
+
+        while (gap != 1 || swapped) {
+            gap = getNextGap(gap);
+
+            swapped = false;
+
+            for (int i = 0; i < (n-gap); i++) {
+                if (whole.get(i).getIndex() > whole.get(i+gap).getIndex()) {
+                    pixelColor temp = whole.get(i);
+
+                    whole.set(i,whole.get(i+gap));
+                    drawPixelBoard(g2d, whole);
+                    wait(delay);
+
+                    whole.set(i+gap, temp);
+                    drawPixelBoard(g2d, whole);
+                    wait(delay);
+
+                    swapped = true;
                 }
             }
-            drawPixelBoard(g2d,pList);
-            wait(delay);
-        }
-    }
-
-    public void bubbleSort(ArrayList<pixelColor> pList, Graphics g2d, int delay, int offset) {
-        for (int i = 0; i < pList.size() - 1; i++) {
-            for (int j = 0; j < pList.size() - i - 1; j++) {
-                if (pList.get(j).getIndex() > pList.get(j + 1).getIndex()) {
-                    pixelColor tempColor = pList.get(j + 1);
-                    pList.set(j + 1, pList.get(j));
-                    pList.set(j, tempColor);
-                }
-            }
-            drawPixelBoard(g2d,pList, offset);
-            wait(delay);
         }
     }
 
@@ -394,6 +534,45 @@ public class Visualizer extends  JFrame {
         wait(delay);
     }
 
+    public void bucketSort(ArrayList<pixelColor> whole, int numberOfBuckets, int size, Graphics g2d, int delay, int pixelSize) {
+
+        int hash;
+
+        ArrayList[] buckets = new ArrayList[numberOfBuckets];
+        for (int i = 0; i < numberOfBuckets; i++) {
+            buckets[i] = new ArrayList();
+        }
+
+        for(pixelColor p : whole) {
+            hash = hash(p.getIndex(), (size/pixelSize), numberOfBuckets);
+            buckets[hash].add(p);
+        }
+        combineLists(buckets, g2d,delay);
+        int pixelsDrawn = 0;
+        for(ArrayList<pixelColor> bucket : buckets) {
+            bubbleSort(bucket,g2d,delay, pixelsDrawn);
+            pixelsDrawn+=(bucket.size()*pixelSize);
+        }
+
+        int i = 0;
+
+        for (ArrayList<pixelColor> bucket : buckets) {
+            for (pixelColor p : bucket) {
+                whole.set(i++,p);
+            }
+        }
+        drawPixelBoard(g2d, whole, pixelsDrawn);
+    }
+
+    public int hash (int num, int max, int numBuckets) {
+        float value = (float)num/max;
+        System.out.println(value);
+        int bucketNum = (int)(value * numBuckets);
+        System.out.println(bucketNum);
+        return bucketNum;
+
+    }
+
     public int partition(ArrayList<pixelColor> whole, int low, int high, Graphics g2d, int delay) {
         pixelColor pivot = whole.get(high);
         int i = (low-1);
@@ -422,6 +601,43 @@ public class Visualizer extends  JFrame {
 
             quickSort(whole,low,pi-1, g2d, delay);
             quickSort(whole,pi+1,high, g2d, delay);
+        }
+    }
+
+    public void compAndSwap(ArrayList<pixelColor> whole, int i, int j, int dir, Graphics g2d, int delay) {
+        if ((whole.get(i).getIndex() > whole.get(j).getIndex() && dir == 1) || (whole.get(i).getIndex() < whole.get(j).getIndex() && dir == 0)) {
+
+            pixelColor temp = whole.get(i);
+
+            whole.set(i,whole.get(j));
+            drawPixelBoard(g2d, whole);
+            wait(delay);
+
+            whole.set(j, temp);
+            drawPixelBoard(g2d, whole);
+            wait(delay);
+        }
+    }
+
+    public void bitonicMerge(ArrayList<pixelColor> whole, int low, int cnt, int dir, Graphics g2d, int delay) {
+        if (cnt > 1) {
+            int k = cnt/2;
+            for (int i = low; i < (low+k); i++)
+                compAndSwap(whole,i,i+k,dir, g2d, delay);
+            bitonicMerge(whole,low,k,dir,g2d,delay);
+            bitonicMerge(whole,low+k,k,dir,g2d,delay);
+        }
+    }
+
+    void bitonicSort(ArrayList<pixelColor> whole, int low, int cnt, int dir, Graphics g2d, int delay) {
+        if (cnt > 1) {
+            int k = cnt/2;
+
+            bitonicSort(whole, low, k, 1, g2d, delay);
+
+            bitonicSort(whole, low+k, k, 0, g2d, delay);
+
+            bitonicMerge(whole,low,cnt,dir,g2d,delay);
         }
     }
 
@@ -470,95 +686,63 @@ public class Visualizer extends  JFrame {
         }
     }
 
-    public static pixelColor getMax(ArrayList<pixelColor> whole, int n) {
-
-        pixelColor mx = whole.get(0);
-
-        for(pixelColor p : whole) {
-            if (p.getIndex() > mx.getIndex()) mx = p;
-        }
-
-        return mx;
-    }
-
-    public void bucketSort(ArrayList<pixelColor> whole, int numberOfBuckets, Graphics g2d, int delay, int pixelSize) {
-        ArrayList[] buckets = new ArrayList[numberOfBuckets];
-        for (int i = 0; i < numberOfBuckets; i++) {
-            buckets[i] = new ArrayList();
-        }
-
-        for(pixelColor p : whole) {
-            buckets[hash((int)p.getIndex(),numberOfBuckets)].add(p);
-        }
-        combineLists(buckets, g2d,delay);
-        int pixelsDrawn = 0;
-        for(ArrayList<pixelColor> bucket : buckets) {
-            bubbleSort(bucket,g2d,delay, pixelsDrawn);
-            pixelsDrawn+=(bucket.size()*pixelSize);
-        }
-
-        int i = 0;
-
-        for (ArrayList<pixelColor> bucket : buckets) {
-            for (pixelColor p : bucket) {
-                whole.set(i++,p);
-            }
-        }
-        drawPixelBoard(g2d, whole, pixelsDrawn);
-    }
-
-    public int hash (int num, int numBuckets) {
-        return (int)(num/numBuckets);
-    }
-
-    public void shellSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
+    public void cycleSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
+        int writes = 0;
         int n = whole.size();
 
-        for(int gap = (n/2); gap > 0; gap/=2) {
-            for (int i = gap; i < n; i+=1) {
-                pixelColor temp = whole.get(i);
+        for (int cycle_Start = 0; cycle_Start <= (n-2) ; cycle_Start++) {
+            pixelColor item = whole.get(cycle_Start);
 
-                int j;
-                for(j = i; j >= gap && whole.get(j-gap).getIndex() > temp.getIndex(); j-= gap) {
-                    whole.set(j,whole.get(j-gap));
+            int pos = cycle_Start;
+
+            for (int i = cycle_Start + 1; i < n; i++) {
+                if (whole.get(i).getIndex() < item.getIndex()) {
+                    pos++;
+                }
+            }
+
+            if (pos == cycle_Start) {
+                continue;
+            }
+
+            while (item.getIndex() == whole.get(pos).getIndex()) {
+                pos+=1;
+            }
+
+            if (pos != cycle_Start) {
+                pixelColor temp = item;
+                item = whole.get(pos);
+                whole.set(pos,temp);
+
+                drawPixelBoard(g2d,whole);
+                wait(delay);
+
+                writes++;
+            }
+
+            while (pos != cycle_Start) {
+                pos = cycle_Start;
+
+                for (int i = cycle_Start+1; i < n; i++) {
+                    if (whole.get(i).getIndex() < item.getIndex()) {
+                        pos+=1;
+                    }
+                }
+
+                while (item == whole.get(pos)) {
+                    pos+=1;
+                }
+
+                if (item != whole.get(pos)) {
+                    pixelColor temp = item;
+                    item = whole.get(pos);
+                    whole.set(pos,temp);
+
                     drawPixelBoard(g2d,whole);
                     wait(delay);
+
+                    writes++;
                 }
-                whole.set(j,temp);
-            }
-        }
-    }
-
-    public void combineLists(ArrayList[] lists, Graphics g2d, int delay) {
-        ArrayList<pixelColor> whole = new ArrayList<>();
-        for(ArrayList<pixelColor> list: lists) {
-            for(pixelColor p : list) {
-                whole.add(p);
-                wait(delay);
-                drawPixelBoard(g2d,whole);
-            }
-        }
-    }
-
-    void gnomeSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
-
-        int n = whole.size();
-
-        int index = 0;
-
-        while (index < n) {
-            if (index == 0)
-                index++;
-            if (whole.get(index).getIndex() >= whole.get(index-1).getIndex())
-                index++;
-            else {
-                pixelColor temp;
-                temp = whole.get(index);
-                whole.set(index, whole.get(index-1));
-                whole.set(index-1, temp);
-                index--;
-                drawPixelBoard(g2d, whole);
-                wait(delay);
             }
         }
     }
