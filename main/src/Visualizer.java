@@ -1,6 +1,5 @@
 import com.sun.source.tree.TreeVisitor;
 import jdk.dynalink.linker.LinkerServices;
-
 import javax.swing.*;
 import javax.tools.Tool;
 import java.awt.*;
@@ -11,8 +10,11 @@ import java.util.Collections;
 import java.util.Scanner;
 
 public class Visualizer extends  JFrame {
+
     public Visualizer() {
-        super("Rectangle Drawing Demo");
+
+        //Set up basic parameters for the Visualizer
+        super("Sorting Algorithm Visualizer");
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         getContentPane().setBackground(Color.WHITE);
         setSize(screenSize.width, screenSize.height);
@@ -23,6 +25,8 @@ public class Visualizer extends  JFrame {
     }
 
     public static void main(String[] args) {
+
+        //Run the visualizer
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -32,6 +36,8 @@ public class Visualizer extends  JFrame {
     }
 
     public void paint (Graphics g) {
+
+        //Paint the rectangles
         super.paint(g);
         try {
             drawRectangles(g);
@@ -40,35 +46,24 @@ public class Visualizer extends  JFrame {
         }
     }
 
-    void drawPixelBoard(Graphics g2d, ArrayList<pixelColor> pList) {
+    void drawPixelBoard(Graphics graphicsComponent, ArrayList<pixelColor> pixelColorList) {
+
+        //Start at the 0th index
         int index = 0;
-        for (pixelColor p : pList) {
-            //System.out.println(p.toString());
-            g2d.setColor(new Color(p.getR(), p.getG(), p.getB()));
-            g2d.drawRect(index, 75, p.getWidth(), p.getHeight()-75);
-            g2d.fillRect(index, 75,p.getWidth(),p.getHeight()-75);
-            index+=p.getWidth();
-        }
-    }
 
-    void drawPixelBoard(Graphics g2d, ArrayList<pixelColor> pList, String label) {
+        //For each pixelColor pColor in the pixelColorList
+        for (pixelColor pColor : pixelColorList) {
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int screenWidth = screenSize.width;
-        int screenHeight = screenSize.height;
+            //Set the current color to that pColor
+            graphicsComponent.setColor(new Color(pColor.getR(), pColor.getG(), pColor.getB()));
 
-        g2d.setColor(Color.WHITE);
-        g2d.fillRect(0,0,screenWidth, 75);
-        g2d.setColor(Color.BLACK);
-        g2d.setFont(new Font("TimesRoman", Font.BOLD, 50));
-        g2d.drawString(label, screenWidth/80, screenHeight/20);
-        int index = 0;
-        for (pixelColor p : pList) {
-            //System.out.println(p.toString());
-            g2d.setColor(new Color(p.getR(), p.getG(), p.getB()));
-            g2d.drawRect(index, 75, p.getWidth(), p.getHeight()-75);
-            g2d.fillRect(index, 75,p.getWidth(),p.getHeight()-75);
-            index+=p.getWidth();
+            //Draw and fill a rectangle with that color
+            graphicsComponent.drawRect(index, 0, pColor.getWidth(), pColor.getHeight());
+            graphicsComponent.fillRect(index, 0,pColor.getWidth(),pColor.getHeight());
+
+            //Increase the index
+            index += pColor.getWidth();
+
         }
     }
 
@@ -223,7 +218,8 @@ public class Visualizer extends  JFrame {
                 break;
             case 10:
                 System.out.println("Running Bitonic Sort");
-                bitonicSort(pcArrayList,0,pcArrayList.size(),0, g2d,delay);
+                MidiSoundPlayer player = new MidiSoundPlayer(pcArrayList.size());
+                bitonicSort(pcArrayList,0,pcArrayList.size(),0, g2d, player, delay);
                 System.out.println("List sorted using Bitonic Sort");
                 break;
             case 11:
@@ -258,7 +254,7 @@ public class Visualizer extends  JFrame {
                 jLocation = whole.get(j).getIndex();
                 comparisons++;
                 if (jLocation < minLocation) {
-                    drawPixelBoard(g2d, whole, "Selection Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+                    drawPixelBoard(g2d, whole);
                     minIndex = j;
                     minLocation = whole.get(minIndex).getIndex();
                 }
@@ -268,15 +264,15 @@ public class Visualizer extends  JFrame {
             pixelColor currentBottom = whole.get(i);
 
             whole.set(minIndex, currentBottom);
-            drawPixelBoard(g2d,whole, "Selection Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+            drawPixelBoard(g2d,whole);
             wait(delay);
 
             whole.set(i, tempPixel);
-            drawPixelBoard(g2d,whole, "Selection Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+            drawPixelBoard(g2d,whole);
             wait(delay);
 
             swaps++;
-            drawPixelBoard(g2d, whole, "Selection Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+            drawPixelBoard(g2d, whole);
         }
         System.out.println(swaps + " Swaps Made");
         System.out.println(comparisons + " Comparisons Made");
@@ -300,7 +296,7 @@ public class Visualizer extends  JFrame {
                 pList.set(j + 1, pList.get(j));
                 j = j - 1;
 
-                drawPixelBoard(g2d, pList,  "Insertion Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+                drawPixelBoard(g2d, pList);
                 wait(delay);
             }
 
@@ -308,7 +304,7 @@ public class Visualizer extends  JFrame {
 
             swaps++;
 
-            drawPixelBoard(g2d,pList, "Insertion Sort: " + comparisons + " Comparisons and " + swaps + " Swaps");
+            drawPixelBoard(g2d,pList);
             wait(delay);
         }
         System.out.println(swaps + " Swaps Made");
@@ -604,40 +600,37 @@ public class Visualizer extends  JFrame {
         }
     }
 
-    public void compAndSwap(ArrayList<pixelColor> whole, int i, int j, int dir, Graphics g2d, int delay) {
-        if ((whole.get(i).getIndex() > whole.get(j).getIndex() && dir == 1) || (whole.get(i).getIndex() < whole.get(j).getIndex() && dir == 0)) {
+    public void compAndSwap(ArrayList<pixelColor> whole, int i, int j, int dir, Graphics g2d, MidiSoundPlayer player, int delay) {
+        boolean direction = (dir == 1);
+        if (direction == (whole.get(i).getIndex() >= whole.get(j).getIndex())) {
 
             pixelColor temp = whole.get(i);
-
             whole.set(i,whole.get(j));
-            drawPixelBoard(g2d, whole);
-            wait(delay);
-
             whole.set(j, temp);
+
             drawPixelBoard(g2d, whole);
+            player.makeSound(whole.get(i).index);
+
             wait(delay);
         }
     }
 
-    public void bitonicMerge(ArrayList<pixelColor> whole, int low, int cnt, int dir, Graphics g2d, int delay) {
+    public void bitonicMerge(ArrayList<pixelColor> whole, int low, int cnt, int dir, Graphics g2d, MidiSoundPlayer player, int delay) {
         if (cnt > 1) {
             int k = cnt/2;
             for (int i = low; i < (low+k); i++)
-                compAndSwap(whole,i,i+k,dir, g2d, delay);
-            bitonicMerge(whole,low,k,dir,g2d,delay);
-            bitonicMerge(whole,low+k,k,dir,g2d,delay);
+                compAndSwap(whole,i,i+k,dir, g2d, player, delay);
+            bitonicMerge(whole,low,k,dir,g2d, player, delay);
+            bitonicMerge(whole,low+k,k,dir,g2d, player, delay);
         }
     }
 
-    void bitonicSort(ArrayList<pixelColor> whole, int low, int cnt, int dir, Graphics g2d, int delay) {
+    void bitonicSort(ArrayList<pixelColor> whole, int low, int cnt, int dir, Graphics g2d, MidiSoundPlayer player, int delay) {
         if (cnt > 1) {
             int k = cnt/2;
-
-            bitonicSort(whole, low, k, 1, g2d, delay);
-
-            bitonicSort(whole, low+k, k, 0, g2d, delay);
-
-            bitonicMerge(whole,low,cnt,dir,g2d,delay);
+            bitonicSort(whole, low, k, 1, g2d, player, delay);
+            bitonicSort(whole, low+k, k, 0, g2d, player, delay);
+            bitonicMerge(whole,low,cnt,dir,g2d, player, delay);
         }
     }
 
