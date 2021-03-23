@@ -1,11 +1,7 @@
-import com.sun.source.tree.TreeVisitor;
-import jdk.dynalink.linker.LinkerServices;
 import javax.swing.*;
-import javax.tools.Tool;
 import java.awt.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Scanner;
 
@@ -46,6 +42,7 @@ public class Visualizer extends  JFrame {
         }
     }
 
+    //Draw the pixel board
     void drawPixelBoard(Graphics graphicsComponent, ArrayList<pixelColor> pixelColorList) {
 
         //Start at the 0th index
@@ -67,17 +64,32 @@ public class Visualizer extends  JFrame {
         }
     }
 
-    void drawPixelBoard(Graphics g2d, ArrayList<pixelColor> pList, int offset) {
+    //Draw the pixel board with an offset
+    void drawPixelBoard(Graphics graphicsComponent, ArrayList<pixelColor> pixelColorList, int offset) {
+
+        //Start at the offset index
         int index = offset;
-        for (pixelColor p : pList) {
-            g2d.setColor(new Color(p.getR(), p.getG(), p.getB()));
-            g2d.drawRect(index, 0, p.getWidth(), p.getHeight());
-            g2d.fillRect(index, 0,p.getWidth(),p.getHeight());
-            index+=p.getWidth();
+
+        //For each pixelColor pColor in the pixelColorList
+        for (pixelColor pColor : pixelColorList) {
+
+            //Set the current color to that pColor
+            graphicsComponent.setColor(new Color(pColor.getR(), pColor.getG(), pColor.getB()));
+
+            //Draw and fill a rectangle with that color
+            graphicsComponent.drawRect(index, 0, pColor.getWidth(), pColor.getHeight());
+            graphicsComponent.fillRect(index, 0,pColor.getWidth(),pColor.getHeight());
+
+            //Increase the index
+            index += pColor.getWidth();
+
         }
     }
 
+    //Simple wait command
     void wait(int time) {
+
+        //Wait for time
         try {
             Thread.sleep(time);
         } catch (InterruptedException e) {
@@ -85,42 +97,79 @@ public class Visualizer extends  JFrame {
         }
     }
 
-    void drawRectangles(Graphics g) throws InterruptedException {
+    //Draw the rectangles
+    void drawRectangles(Graphics graphicsComponent) throws InterruptedException {
+
+        //Set a default delay and size
         int delay = 10;
         int size = 10;
-        pBoard pBoard = new pBoard(size);
-        Graphics2D g2d = (Graphics2D) g;
-        Collections.shuffle(pBoard.pList);
-        drawPixelBoard(g2d, pBoard.pList);
+
+        //Make a pixelList with the given size and shuffle it
+        pixelList visualizerPixelList = new pixelList(size);
+        ArrayList<pixelColor> rawPixelList = visualizerPixelList.pList;
+        Collections.shuffle(rawPixelList);
+
+        //Create a 2D version of the Graphics Components
+        Graphics2D graphicsComponent2D = (Graphics2D) graphicsComponent;
+
+        //Draw the pixelBoard
+        drawPixelBoard(graphicsComponent2D, rawPixelList);
+
         while (true) {
+
+            //Get the user's choice
             int userChoice = getUserChoice();
+
+            //Do something based on the user's choice
             switch (userChoice) {
+
+                //Randomize the Pixels
                 case 0:
-                    Collections.shuffle(pBoard.pList);
-                    drawPixelBoard(g2d, pBoard.pList);
+                    Collections.shuffle(rawPixelList);
+                    drawPixelBoard(graphicsComponent2D, rawPixelList);
                     break;
+
+                //Sort the Pixels
                 case 1:
                     int sortingAlgorithmSelection = getSortingAlgorithmChoice();
-                    runSortingAlgorithm(sortingAlgorithmSelection, pBoard.pList, g2d, delay, size);
+                    runSortingAlgorithm(sortingAlgorithmSelection, rawPixelList, graphicsComponent2D, delay, size);
                     break;
+
+                //Change the delay
                 case 2:
                     delay = getNewDelay(delay);
                     break;
+
+                //Change the pixel size
                 case 3:
+
+                    //Get the new size
                     size = getNewSize(size);
-                    System.out.println(size);
-                    pBoard.pList.clear();
-                    pBoard newPBoard = new pBoard(size);
-                    pBoard.setpList(newPBoard.pList);
-                    drawPixelBoard(g2d,newPBoard.pList);
+
+                    //Clear the pixelList
+                    rawPixelList.clear();
+
+                    //Create a newPixelList with the new size and transfer it to the rawPixelList
+                    pixelList newPixelList = new pixelList(size);
+                    rawPixelList.clear();
+                    rawPixelList = newPixelList.pList;
+
+                    //Re-draw the pixelBoard with the new size
+                    drawPixelBoard(graphicsComponent2D, rawPixelList);
                 default:
 
+                    //Print out an error and have the user try again
+                    System.out.println("Please Try Again: Invalid Response");
+                    System.exit(0);
                     break;
             }
         }
     }
 
+    //Get's the user's choice
     public int getUserChoice () {
+
+        //Print out options to the user
         System.out.println("Choose an Option: ");
         System.out.println("----------------------------------------------");
         System.out.println("(0): Randomize Pixels");
@@ -128,11 +177,15 @@ public class Visualizer extends  JFrame {
         System.out.println("(2): Change Delay");
         System.out.println("(3): Change Pixel Size");
 
+        //Return their choice
         Scanner userChoice = new Scanner(System.in);
         return userChoice.nextInt();
     }
 
+    //Get's the selected sorting algorithm
     public int getSortingAlgorithmChoice() {
+
+        //Print out the options to the user
         System.out.println("Which Sorting Algorithm Would you like to use?");
         System.out.println("----------------------------------------------");
         System.out.println("(0) - Selection Sort || (7) - Merge Sort  ");
@@ -143,139 +196,194 @@ public class Visualizer extends  JFrame {
         System.out.println("(5) - Cocktail Sort  || (12) - Cycle Sort");
         System.out.println("(6) - Comb Sort      ||");
 
+        //Return their choice
         Scanner userChoice = new Scanner(System.in);
         return userChoice.nextInt();
     }
 
+    //Get's a new delay from the user
     public int getNewDelay(int delay) {
+
+        //Print out the current delay and ask the user for a new one
         System.out.println("Your current delay is " + delay + " ms/per operation. What would you like the new delay to be?");
+
+        //Return their choice
         Scanner userChoice = new Scanner(System.in);
         return userChoice.nextInt();
     }
 
+    //Get's a new size from the user
     private int getNewSize(int size) {
+
+        //Print out the current size and ask the user for a new one
         System.out.println("Your current pixel Width is " + size + " pixels. What would you like the new size to be?");
+
+        //Return their choice
         Scanner userChoice = new Scanner(System.in);
         int newSize = userChoice.nextInt();
         return  newSize;
     }
 
-    public void runSortingAlgorithm(int sortingAlgorithmChoice, ArrayList<pixelColor> pcArrayList, Graphics g2d, int delay, int pixelWidth) {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    //Run's a particular sorting algorithm based on the user's selection
+    public void runSortingAlgorithm(int sortingAlgorithmChoice, ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, int delay, int pixelWidth) {
 
-        int screenHeight = screenSize.height;
+        //Get the dimensions of the screen
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
+
+        //Set up the sound component of the visualizer
+        MidiSoundPlayer soundComponent = new MidiSoundPlayer(rawPixelList.size()-1);
+
+        //Run a sorting algorithm based on sortingAlgorithmChoice
         switch (sortingAlgorithmChoice) {
+
+            //SelectionSort
             case 0:
+
+                //Run selection sort
                 System.out.println("Running Selection Sort");
-                selectionSort(pcArrayList, g2d, delay);
+                selectionSort(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Selection Sort");
                 break;
+
+            //InsertionSort
             case 1:
+
+                //Run insertion sort
                 System.out.println("Running Insertion Sort");
-                insertionSort(pcArrayList,g2d,delay);
+                insertionSort(rawPixelList,graphicalComponent,delay);
                 System.out.println("List sorted using Insertion Sort");
                 break;
+
+            //GnomeSort
             case 2:
                 System.out.println("Running Gnome Sort");
-                gnomeSort(pcArrayList,g2d,delay);
+                gnomeSort(rawPixelList,graphicalComponent,delay);
                 System.out.println("List sorted using Gnome Sort");
                 break;
+
+            //ShellSort
             case 3:
                 System.out.println("Running Shell Sort");
-                shellSort(pcArrayList,g2d,delay);
+                shellSort(rawPixelList,graphicalComponent,delay);
                 System.out.println("List Sorted using Sort");
                 break;
+
+            //BubbleSort
             case 4:
                 System.out.println("Running Bubble Sort");
-                bubbleSort(pcArrayList,g2d,delay);
+                bubbleSort(rawPixelList,graphicalComponent,delay);
                 System.out.println("List sorted using Bubble Sort");
                 break;
+
+            //Cocktail-Shaker Sort
             case 5:
                 System.out.println("Running Cocktail Sort");
-                cocktailSort(pcArrayList,g2d,delay);
+                cocktailSort(rawPixelList,graphicalComponent,delay);
                 System.out.println("List Sorted using Cocktail Sort");
                 break;
+
+            //CombSort
             case 6:
                 System.out.println("Running Comb Sort");
-                combSort(pcArrayList, g2d, delay);
+                combSort(rawPixelList, graphicalComponent, delay);
                 System.out.println("List sorted using Comb Sort");
                 break;
+
+            //MergeSort
             case 7:
                 System.out.println("Running Merge Sort");
-                mergeSort(pcArrayList,0,pcArrayList.size()-1,g2d,delay);
+                mergeSort(rawPixelList,0,rawPixelList.size()-1,graphicalComponent,delay);
                 System.out.println("List sorted using Bubble Sort");;
                 break;
+
+            //BucketSort
             case 8:
                 System.out.println("Running Bucket Sort");
-                bucketSort(pcArrayList, 10, screenWidth, g2d, delay, pixelWidth);
+                bucketSort(rawPixelList, 10, screenWidth, graphicalComponent, delay, pixelWidth);
                 System.out.println("List sorted using Bucket Sort");
                 break;
+
+            //QuickSort
             case 9:
                 System.out.println("Running Quick Sort");
-                quickSort(pcArrayList,0,pcArrayList.size()-1,g2d,delay);
+                quickSort(rawPixelList,0,rawPixelList.size()-1,graphicalComponent,delay);
                 System.out.println("List sorted using Quick Sort");
                 break;
+
+            //BitonicSort
             case 10:
                 System.out.println("Running Bitonic Sort");
-                MidiSoundPlayer player = new MidiSoundPlayer(pcArrayList.size());
-                bitonicSort(pcArrayList,0,pcArrayList.size(),0, g2d, player, delay);
+                bitonicSort(rawPixelList,0,rawPixelList.size(),0, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Bitonic Sort");
                 break;
+
+            //HeapSort
             case 11:
                 System.out.println("Running Heap Sort");
-                heapSort(pcArrayList, g2d, delay);
+                heapSort(rawPixelList, graphicalComponent, delay);
                 System.out.println("List sorted using Heap Sort");
                 break;
+
+            //CycleSort
             case 12:
                 System.out.println("Running Cycle Sort");
-                cycleSort(pcArrayList, g2d, delay);
+                cycleSort(rawPixelList, graphicalComponent, delay);
                 System.out.println("List sorted using Cycle Sort");
                 break;
+
+            //Default
             default:
                 System.out.println("Not a Valid Argument. Try Again");
                 break;
         }
     }
 
-    public void selectionSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
+    public void selectionSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-        int comparisons = 0;
-        int swaps = 0;
+        //Get information about the rawPixelList
+        int pixelListSize = rawPixelList.size();
 
-        int n = whole.size();
-        int jLocation;
+        //Set up some tracker variables for later
+        int minIndex;
         int minLocation;
+        int jLocation;
 
-        for (int i = 0; i < n - 1; i++) {
-            int minIndex = whole.get(i).getIndex();
-            minLocation = whole.get(minIndex).getIndex();
-            for (int j = i + 1; j < n; j++) {
-                jLocation = whole.get(j).getIndex();
-                comparisons++;
+        //Loop through the list
+        for (int i = 0; i < pixelListSize - 1; i++) {
+
+            //Set the minimumIndex and minLocation equal to the first element
+            minIndex = rawPixelList.get(i).getIndex();
+            minLocation = rawPixelList.get(minIndex).getIndex();
+
+            //Loop from i + 1 to the end of the list
+            for (int j = i + 1; j < pixelListSize; j++) {
+
+                //Store the location of this pixelColor
+                jLocation = rawPixelList.get(j).getIndex();
+
+                //If the location of the j color is less than the minimum color
                 if (jLocation < minLocation) {
-                    drawPixelBoard(g2d, whole);
+
+                    //Set the minimumIndex and location equal to the j color
                     minIndex = j;
-                    minLocation = whole.get(minIndex).getIndex();
+                    minLocation = rawPixelList.get(minIndex).getIndex();
                 }
             }
 
-            pixelColor tempPixel = whole.get(minIndex);
-            pixelColor currentBottom = whole.get(i);
+            //Swap the currentBottom with the minimum color
+            pixelColor tempPixel = rawPixelList.get(minIndex);
+            pixelColor currentBottom = rawPixelList.get(i);
+            rawPixelList.set(minIndex, currentBottom);
+            rawPixelList.set(i, tempPixel);
 
-            whole.set(minIndex, currentBottom);
-            drawPixelBoard(g2d,whole);
+            //Play a sound based on the index
+            soundComponent.makeSound(tempPixel.getIndex());
+
+            //Redraw the pixelBoard
+            drawPixelBoard(graphicalComponent, rawPixelList);
             wait(delay);
-
-            whole.set(i, tempPixel);
-            drawPixelBoard(g2d,whole);
-            wait(delay);
-
-            swaps++;
-            drawPixelBoard(g2d, whole);
         }
-        System.out.println(swaps + " Swaps Made");
-        System.out.println(comparisons + " Comparisons Made");
     }
 
     public void insertionSort(ArrayList<pixelColor> pList, Graphics g2d, int delay) {

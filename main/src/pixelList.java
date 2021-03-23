@@ -1,9 +1,9 @@
 import java.awt.*;
 import java.util.ArrayList;
 
-public class pBoard {
+public class pixelList {
     public ArrayList<pixelColor> pList = new ArrayList<>();
-    public pBoard(int size) {
+    public pixelList(int size) {
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
