@@ -12,6 +12,7 @@ public class pixelList {
 
         int pixelHeight = screenHeight;
         int pixelWidth = 10;
+        pixelWidth = size;
 
         float r = 0;
         float g = 0;
@@ -22,11 +23,10 @@ public class pixelList {
         int numberOfElements;
         float addValue;
 
-        pixelWidth = size;
-
         leftOverPixels = ((screenWidth/pixelWidth)%7);
         numberOfElements = ((screenWidth-leftOverPixels)/pixelWidth);
         addValue = 255/(float)(numberOfElements/7);
+
         while(Math.round(r) < 255) {
             pList.add(new pixelColor((int)r,(int)g,(int)b,index,pixelHeight,pixelWidth));
             r+=addValue;
@@ -62,11 +62,21 @@ public class pixelList {
             g+=addValue;
             index++;
         }
-        while (leftOverPixels > 0) {
-            pList.add(new pixelColor(255,255,255,index,pixelHeight,pixelWidth));
+
+        int lastPixelGreen = pList.get(pList.size()-1).getG();
+        float leftOVerPixelsAddValue = ((float)(255-lastPixelGreen)/(float)leftOverPixels);
+
+        System.out.println(lastPixelGreen);
+        System.out.println(leftOVerPixelsAddValue);
+
+        while (leftOverPixels > 1) {
+            lastPixelGreen += (int)leftOVerPixelsAddValue;
+            pList.add(new pixelColor(255,lastPixelGreen,255,index,pixelHeight,pixelWidth));
             leftOverPixels--;
             index++;
         }
+
+        pList.add(new pixelColor(255,255,255,index,pixelHeight,pixelWidth));
     }
 
     public pixelColor addRed (pixelColor pColor) {
