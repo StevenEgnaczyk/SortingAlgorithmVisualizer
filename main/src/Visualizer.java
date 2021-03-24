@@ -240,30 +240,37 @@ public class Visualizer extends  JFrame {
             //SelectionSort
             case 0:
 
-                //Run selection sort
+                //Run Selection sort
                 System.out.println("Running Selection Sort");
                 selectionSort(rawPixelList, graphicalComponent, soundComponent, delay);
+                checkSortingAlgorithm(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Selection Sort");
                 break;
 
             //InsertionSort
             case 1:
 
-                //Run insertion sort
+                //Run Insertion sort
                 System.out.println("Running Insertion Sort");
-                insertionSort(rawPixelList,graphicalComponent,delay);
+                insertionSort(rawPixelList, graphicalComponent, soundComponent, delay);
+                checkSortingAlgorithm(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Insertion Sort");
                 break;
 
             //GnomeSort
             case 2:
+
+                //Run Gnome Sort
                 System.out.println("Running Gnome Sort");
-                gnomeSort(rawPixelList,graphicalComponent,delay);
+                gnomeSort(rawPixelList, graphicalComponent, soundComponent, delay);
+                checkSortingAlgorithm(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Gnome Sort");
                 break;
 
             //ShellSort
             case 3:
+
+                //Run Shell Sort
                 System.out.println("Running Shell Sort");
                 shellSort(rawPixelList,graphicalComponent,delay);
                 System.out.println("List Sorted using Sort");
@@ -271,6 +278,8 @@ public class Visualizer extends  JFrame {
 
             //BubbleSort
             case 4:
+
+                //Run Bubble Sort
                 System.out.println("Running Bubble Sort");
                 bubbleSort(rawPixelList,graphicalComponent,delay);
                 System.out.println("List sorted using Bubble Sort");
@@ -285,6 +294,8 @@ public class Visualizer extends  JFrame {
 
             //CombSort
             case 6:
+
+                //Run Cocktail-Shaker Sort
                 System.out.println("Running Comb Sort");
                 combSort(rawPixelList, graphicalComponent, delay);
                 System.out.println("List sorted using Comb Sort");
@@ -292,6 +303,8 @@ public class Visualizer extends  JFrame {
 
             //MergeSort
             case 7:
+
+                //Run Merge Sort
                 System.out.println("Running Merge Sort");
                 mergeSort(rawPixelList,0,rawPixelList.size()-1,graphicalComponent,delay);
                 System.out.println("List sorted using Bubble Sort");;
@@ -299,6 +312,8 @@ public class Visualizer extends  JFrame {
 
             //BucketSort
             case 8:
+
+                //Run Bucket Sort
                 System.out.println("Running Bucket Sort");
                 bucketSort(rawPixelList, 10, screenWidth, graphicalComponent, delay, pixelWidth);
                 System.out.println("List sorted using Bucket Sort");
@@ -306,6 +321,8 @@ public class Visualizer extends  JFrame {
 
             //QuickSort
             case 9:
+
+                //Run Quick Sort
                 System.out.println("Running Quick Sort");
                 quickSort(rawPixelList,0,rawPixelList.size()-1,graphicalComponent,delay);
                 System.out.println("List sorted using Quick Sort");
@@ -313,6 +330,8 @@ public class Visualizer extends  JFrame {
 
             //BitonicSort
             case 10:
+
+                //Run Bitonic Sort
                 System.out.println("Running Bitonic Sort");
                 bitonicSort(rawPixelList,0,rawPixelList.size(),0, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Bitonic Sort");
@@ -320,6 +339,8 @@ public class Visualizer extends  JFrame {
 
             //HeapSort
             case 11:
+
+                //Run Heap Sort
                 System.out.println("Running Heap Sort");
                 heapSort(rawPixelList, graphicalComponent, delay);
                 System.out.println("List sorted using Heap Sort");
@@ -327,6 +348,8 @@ public class Visualizer extends  JFrame {
 
             //CycleSort
             case 12:
+
+                //Run Cycle Sort
                 System.out.println("Running Cycle Sort");
                 cycleSort(rawPixelList, graphicalComponent, delay);
                 System.out.println("List sorted using Cycle Sort");
@@ -339,6 +362,58 @@ public class Visualizer extends  JFrame {
         }
     }
 
+    private void checkSortingAlgorithm(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
+
+        int pixelListSize = rawPixelList.size();
+
+        for (int i = 0; i < pixelListSize - 1; i++) {
+            if (rawPixelList.get(i).getIndex() > rawPixelList.get(i+1).getIndex()) {
+
+                pixelColor currentColor = rawPixelList.get(i);
+
+                soundComponent.makeSound(currentColor.getIndex());
+
+                if (currentColor.getR() + 5 <= 255) {
+                    currentColor.setR(currentColor.getR() + 5);
+                }
+
+                if (currentColor.getG() + 5 <= 255) {
+                    currentColor.setG(currentColor.getG() + 5);
+                }
+
+                if (currentColor.getB() + 5 <= 255) {
+                    currentColor.setB(currentColor.getB() + 5);
+                }
+
+                drawPixelBoard(graphicalComponent, rawPixelList, delay);
+                
+            }
+        }
+
+        for (int i = pixelListSize; i > 1; i--) {
+
+            pixelColor currentColor = rawPixelList.get(i);
+
+            soundComponent.makeSound(currentColor.getIndex());
+
+            if (currentColor.getR() - 5 <= 255) {
+                currentColor.setR(currentColor.getR() + 5);
+            }
+
+            if (currentColor.getG() + 5 <= 255) {
+                currentColor.setG(currentColor.getG() + 5);
+            }
+
+            if (currentColor.getB() + 5 <= 255) {
+                currentColor.setB(currentColor.getB() + 5);
+            }
+
+            drawPixelBoard(graphicalComponent, rawPixelList, delay);
+
+        }
+    }
+
+    //Run's SelectionSort
     public void selectionSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
         //Get information about the rawPixelList
@@ -386,60 +461,68 @@ public class Visualizer extends  JFrame {
         }
     }
 
-    public void insertionSort(ArrayList<pixelColor> pList, Graphics g2d, int delay) {
+    //Run's InsertionSort
+    public void insertionSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-        int comparisons = 0;
-        int swaps = 0;
+        //Get the size of the Pixel List
+        int pixelListSize = rawPixelList.size();
 
-        int n = pList.size();
-        for (int i = 1; i < n; i++) {
-            pixelColor key = pList.get(i);
+        //Loop through the size of the Pixel List starting from 1
+        for (int i = 1; i < pixelListSize; i++) {
+
+            //Set a keycColor equal to the Color at that index
+            pixelColor keyColor = rawPixelList.get(i);
+
+            //Start j from one index below from i
             int j = i - 1;
 
-            while (j >= 0 && pList.get(j).getIndex() > key.getIndex()) {
+            //While j is greater than 0 and the Color at J is greater than the keyColor
+            while (j >= 0 && rawPixelList.get(j).getIndex() > keyColor.getIndex()) {
 
-                comparisons++;
-                swaps++;
+                //Shift the Color at J up one
+                rawPixelList.set(j + 1, rawPixelList.get(j));
 
-                pList.set(j + 1, pList.get(j));
+                //Move J down one
                 j = j - 1;
 
-                drawPixelBoard(g2d, pList);
+                //Redraw the pixelBoard, play a sound, and wait
+                drawPixelBoard(graphicalComponent, rawPixelList);
+                soundComponent.makeSound(rawPixelList.get(j).getIndex());
                 wait(delay);
             }
 
-            pList.set(j + 1, key);
+            //After all is said and done, set the j + 1 color to the keyColor
+            rawPixelList.set(j + 1, keyColor);
 
-            swaps++;
-
-            drawPixelBoard(g2d,pList);
+            //Redraw the pixelBoard, play a sound, and wait
+            drawPixelBoard(graphicalComponent,rawPixelList);
+            soundComponent.makeSound(keyColor.getIndex());
             wait(delay);
         }
-        System.out.println(swaps + " Swaps Made");
-        System.out.println(comparisons + " Comparisons Made");
     }
 
-    public void gnomeSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
+    //Run's GnomeSort
+    public void gnomeSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-        int n = whole.size();
+        int n = rawPixelList.size();
 
         int index = 0;
 
         while (index < n) {
             if (index == 0)
                 index++;
-            if (whole.get(index).getIndex() >= whole.get(index-1).getIndex())
+            if (rawPixelList.get(index).getIndex() >= rawPixelList.get(index-1).getIndex())
                 index++;
             else {
                 pixelColor temp;
-                temp = whole.get(index);
+                temp = rawPixelList.get(index);
 
-                whole.set(index, whole.get(index-1));
-                drawPixelBoard(g2d, whole);
+                rawPixelList.set(index, rawPixelList.get(index-1));
+                drawPixelBoard(graphicalComponent, rawPixelList);
                 wait(delay);
 
-                whole.set(index-1, temp);
-                drawPixelBoard(g2d, whole);
+                rawPixelList.set(index-1, temp);
+                drawPixelBoard(graphicalComponent, rawPixelList);
                 wait(delay);
 
                 index--;
