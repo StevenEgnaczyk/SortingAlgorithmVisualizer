@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
@@ -111,6 +110,7 @@ public class Visualizer extends  JFrame {
 
         //Create a 2D version of the Graphics Components
         Graphics2D graphicsComponent2D = (Graphics2D) graphicsComponent;
+        MidiSoundPlayer soundComponent = new MidiSoundPlayer(rawPixelList.size());
 
         //Draw the pixelBoard
         drawPixelBoard(graphicsComponent2D, rawPixelList);
@@ -125,8 +125,13 @@ public class Visualizer extends  JFrame {
 
                 //Randomize the Pixels
                 case 0:
-                    Collections.shuffle(rawPixelList);
-                    drawPixelBoard(graphicsComponent2D, rawPixelList);
+                    int shuffleNumber = 10;
+                    for (int i = 0; i < shuffleNumber; i++) {
+                        Collections.shuffle(rawPixelList);
+                        soundComponent.makeSound(rawPixelList.get(0).getIndex());
+                        drawPixelBoard(graphicsComponent2D, rawPixelList);
+                        wait(delay);
+                    }
                     break;
 
                 //Sort the Pixels
@@ -151,11 +156,12 @@ public class Visualizer extends  JFrame {
 
                     //Create a newPixelList with the new size and transfer it to the rawPixelList
                     pixelList newPixelList = new pixelList(size);
-                    rawPixelList.clear();
                     rawPixelList = newPixelList.pList;
+                    soundComponent = new MidiSoundPlayer(rawPixelList.size());
 
                     //Re-draw the pixelBoard with the new size
                     drawPixelBoard(graphicsComponent2D, rawPixelList);
+                    break;
                 default:
 
                     //Print out an error and have the user try again
@@ -220,8 +226,7 @@ public class Visualizer extends  JFrame {
 
         //Return their choice
         Scanner userChoice = new Scanner(System.in);
-        int newSize = userChoice.nextInt();
-        return  newSize;
+        return userChoice.nextInt();
     }
 
     //Run's a particular sorting algorithm based on the user's selection
@@ -232,7 +237,7 @@ public class Visualizer extends  JFrame {
         int screenWidth = screenSize.width;
 
         //Set up the sound component of the visualizer
-        MidiSoundPlayer soundComponent = new MidiSoundPlayer(rawPixelList.size()-1);
+        MidiSoundPlayer soundComponent = new MidiSoundPlayer(rawPixelList.size());
 
         //Run a sorting algorithm based on sortingAlgorithmChoice
         switch (sortingAlgorithmChoice) {
@@ -243,7 +248,6 @@ public class Visualizer extends  JFrame {
                 //Run Selection sort
                 System.out.println("Running Selection Sort");
                 selectionSort(rawPixelList, graphicalComponent, soundComponent, delay);
-                checkSortingAlgorithm(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Selection Sort");
                 break;
 
@@ -253,7 +257,6 @@ public class Visualizer extends  JFrame {
                 //Run Insertion sort
                 System.out.println("Running Insertion Sort");
                 insertionSort(rawPixelList, graphicalComponent, soundComponent, delay);
-                checkSortingAlgorithm(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Insertion Sort");
                 break;
 
@@ -263,7 +266,6 @@ public class Visualizer extends  JFrame {
                 //Run Gnome Sort
                 System.out.println("Running Gnome Sort");
                 gnomeSort(rawPixelList, graphicalComponent, soundComponent, delay);
-                checkSortingAlgorithm(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Gnome Sort");
                 break;
 
@@ -272,7 +274,7 @@ public class Visualizer extends  JFrame {
 
                 //Run Shell Sort
                 System.out.println("Running Shell Sort");
-                shellSort(rawPixelList,graphicalComponent,delay);
+                shellSort(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List Sorted using Sort");
                 break;
 
@@ -281,14 +283,14 @@ public class Visualizer extends  JFrame {
 
                 //Run Bubble Sort
                 System.out.println("Running Bubble Sort");
-                bubbleSort(rawPixelList,graphicalComponent,delay);
+                bubbleSort(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Bubble Sort");
                 break;
 
             //Cocktail-Shaker Sort
             case 5:
                 System.out.println("Running Cocktail Sort");
-                cocktailSort(rawPixelList,graphicalComponent,delay);
+                cocktailShakerSort(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List Sorted using Cocktail Sort");
                 break;
 
@@ -315,7 +317,7 @@ public class Visualizer extends  JFrame {
 
                 //Run Bucket Sort
                 System.out.println("Running Bucket Sort");
-                bucketSort(rawPixelList, 10, screenWidth, graphicalComponent, delay, pixelWidth);
+                bucketSort(rawPixelList, 10, screenWidth, graphicalComponent, soundComponent, delay, pixelWidth);
                 System.out.println("List sorted using Bucket Sort");
                 break;
 
@@ -359,57 +361,6 @@ public class Visualizer extends  JFrame {
             default:
                 System.out.println("Not a Valid Argument. Try Again");
                 break;
-        }
-    }
-
-    private void checkSortingAlgorithm(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
-
-        int pixelListSize = rawPixelList.size();
-
-        for (int i = 0; i < pixelListSize - 1; i++) {
-            if (rawPixelList.get(i).getIndex() > rawPixelList.get(i+1).getIndex()) {
-
-                pixelColor currentColor = rawPixelList.get(i);
-
-                soundComponent.makeSound(currentColor.getIndex());
-
-                if (currentColor.getR() + 5 <= 255) {
-                    currentColor.setR(currentColor.getR() + 5);
-                }
-
-                if (currentColor.getG() + 5 <= 255) {
-                    currentColor.setG(currentColor.getG() + 5);
-                }
-
-                if (currentColor.getB() + 5 <= 255) {
-                    currentColor.setB(currentColor.getB() + 5);
-                }
-
-                drawPixelBoard(graphicalComponent, rawPixelList, delay);
-                
-            }
-        }
-
-        for (int i = pixelListSize; i > 1; i--) {
-
-            pixelColor currentColor = rawPixelList.get(i);
-
-            soundComponent.makeSound(currentColor.getIndex());
-
-            if (currentColor.getR() - 5 <= 255) {
-                currentColor.setR(currentColor.getR() + 5);
-            }
-
-            if (currentColor.getG() + 5 <= 255) {
-                currentColor.setG(currentColor.getG() + 5);
-            }
-
-            if (currentColor.getB() + 5 <= 255) {
-                currentColor.setB(currentColor.getB() + 5);
-            }
-
-            drawPixelBoard(graphicalComponent, rawPixelList, delay);
-
         }
     }
 
@@ -487,7 +438,7 @@ public class Visualizer extends  JFrame {
 
                 //Redraw the pixelBoard, play a sound, and wait
                 drawPixelBoard(graphicalComponent, rawPixelList);
-                soundComponent.makeSound(rawPixelList.get(j).getIndex());
+                soundComponent.makeSound(rawPixelList.get(j+1).getIndex());
                 wait(delay);
             }
 
@@ -504,132 +455,206 @@ public class Visualizer extends  JFrame {
     //Run's GnomeSort
     public void gnomeSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-        int n = rawPixelList.size();
+        //Get the size of the List
+        int pixelListSize = rawPixelList.size();
 
-        int index = 0;
+        //Start the currentIndex at 0
+        int currentIndex = 0;
 
-        while (index < n) {
-            if (index == 0)
-                index++;
-            if (rawPixelList.get(index).getIndex() >= rawPixelList.get(index-1).getIndex())
-                index++;
+        //Loop through from currentIndex to the end of the list
+        while (currentIndex < pixelListSize) {
+
+            //If the currentIndex is 0 increase it
+            if (currentIndex == 0)
+                currentIndex++;
+
+            //If the current Color is greater than the 1 before it, increase the currentIndex
+            if (rawPixelList.get(currentIndex).getIndex() >= rawPixelList.get(currentIndex-1).getIndex())
+                currentIndex++;
+
+            //Else swap the two values
             else {
+
+                //Swap the values
                 pixelColor temp;
-                temp = rawPixelList.get(index);
+                temp = rawPixelList.get(currentIndex);
+                rawPixelList.set(currentIndex, rawPixelList.get(currentIndex-1));
+                rawPixelList.set(currentIndex-1, temp);
 
-                rawPixelList.set(index, rawPixelList.get(index-1));
+                //Draw the pixelBoard, play a sound, and wait
                 drawPixelBoard(graphicalComponent, rawPixelList);
+                soundComponent.makeSound(currentIndex);
                 wait(delay);
 
-                rawPixelList.set(index-1, temp);
-                drawPixelBoard(graphicalComponent, rawPixelList);
-                wait(delay);
-
-                index--;
+                //Decrease the currentIndex
+                currentIndex--;
             }
         }
     }
 
-    public void shellSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
-        int n = whole.size();
+    //Run's shellSort
+    public void shellSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-        for(int gap = (n/2); gap > 0; gap/=2) {
-            for (int i = gap; i < n; i+=1) {
-                pixelColor temp = whole.get(i);
+        //Get the size of the List
+        int pixelListSize = rawPixelList.size();
+
+        //Loop from the midway point of the list down to 0 by a factor of 2
+        for(int gap = (pixelListSize/2); gap > 0; gap/=2) {
+
+            //Loop from the gap we just calculated to the size of the list
+            for (int i = gap; i < pixelListSize; i++) {
+
+                //Get the Color at i
+                pixelColor temp = rawPixelList.get(i);
 
                 int j;
-                for(j = i; j >= gap && whole.get(j-gap).getIndex() > temp.getIndex(); j-= gap) {
-                    whole.set(j,whole.get(j-gap));
-                    drawPixelBoard(g2d,whole);
+
+                //While the Color at J is greater than the gap index and also the element at J-Gap is greater than the temp element
+                for(j = i; j >= gap && rawPixelList.get(j-gap).getIndex() > temp.getIndex(); j-= gap) {
+
+                    //Set the Color at J equal to the Color at the element J-Gap
+                    rawPixelList.set(j,rawPixelList.get(j-gap));
+
+                    //Redraw the board, play the sound, and then wait
+                    drawPixelBoard(graphicalComponent,rawPixelList);
+                    soundComponent.makeSound(rawPixelList.get(j).getIndex());
                     wait(delay);
                 }
-                whole.set(j,temp);
+
+                //Set the Color at J equal to the temporary Color
+                rawPixelList.set(j,temp);
             }
         }
     }
 
-    public void combineLists(ArrayList[] lists, Graphics g2d, int delay) {
-        ArrayList<pixelColor> whole = new ArrayList<>();
-        for(ArrayList<pixelColor> list: lists) {
-            for(pixelColor p : list) {
-                whole.add(p);
-                wait(delay);
-                drawPixelBoard(g2d,whole);
-            }
-        }
-    }
+    //Run's bubbleSort
+    public void bubbleSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-    public void bubbleSort(ArrayList<pixelColor> pList, Graphics g2d, int delay) {
-        for (int i = 0; i < pList.size() - 1; i++) {
-            for (int j = 0; j < pList.size() - i - 1; j++) {
-                if (pList.get(j).getIndex() > pList.get(j + 1).getIndex()) {
-                    pixelColor tempColor = pList.get(j + 1);
-                    pList.set(j + 1, pList.get(j));
-                    pList.set(j, tempColor);
+        //Get the size of the list
+        int pixelListSize = rawPixelList.size();
+
+        //Loop through the list except the last element
+        for (int i = 0; i < pixelListSize - 1; i++) {
+
+            //Loop from the start of the list to the size of the list minus i
+            for (int j = 0; j < pixelListSize - i - 1; j++) {
+
+                //If the Color at J is greater than the one at the Color right above it
+                if (rawPixelList.get(j).getIndex() > rawPixelList.get(j + 1).getIndex()) {
+
+                    //Swap the two colors
+                    pixelColor tempColor = rawPixelList.get(j + 1);
+                    rawPixelList.set(j + 1, rawPixelList.get(j));
+                    rawPixelList.set(j, tempColor);
+
+                    //Play a sound, redraw the pixelBoard, and wait
+                    drawPixelBoard(graphicalComponent,rawPixelList);
+                    soundComponent.makeSound(rawPixelList.get(j).getIndex());
+                    wait(delay);
                 }
             }
-            drawPixelBoard(g2d,pList);
-            wait(delay);
         }
     }
 
-    public void bubbleSort(ArrayList<pixelColor> pList, Graphics g2d, int delay, int offset) {
-        for (int i = 0; i < pList.size() - 1; i++) {
-            for (int j = 0; j < pList.size() - i - 1; j++) {
-                if (pList.get(j).getIndex() > pList.get(j + 1).getIndex()) {
-                    pixelColor tempColor = pList.get(j + 1);
-                    pList.set(j + 1, pList.get(j));
-                    pList.set(j, tempColor);
+    //Run's BubbleSort with an offset
+    public void bubbleSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay, int offset) {
+
+        //Get the size of the list
+        int pixelListSize = rawPixelList.size();
+
+        //Loop through the list except the last element
+        for (int i = 0; i < pixelListSize - 1; i++) {
+
+            //Loop from the start of the list to the size of the list minus i
+            for (int j = 0; j < pixelListSize - i - 1; j++) {
+
+                //If the Color at J is greater than the one at the Color right above it
+                if (rawPixelList.get(j).getIndex() > rawPixelList.get(j + 1).getIndex()) {
+
+                    //Swap the two colors
+                    pixelColor tempColor = rawPixelList.get(j + 1);
+                    rawPixelList.set(j + 1, rawPixelList.get(j));
+                    rawPixelList.set(j, tempColor);
+
+                    //Play a sound, redraw the pixelBoard, and wait
+                    drawPixelBoard(graphicalComponent, rawPixelList, offset);
+                    soundComponent.makeSound(rawPixelList.get(j).getIndex());
+                    wait(delay);
                 }
             }
-            drawPixelBoard(g2d,pList, offset);
-            wait(delay);
         }
     }
 
-    private void cocktailSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
+    //Run's cocktailShakerSort
+    private void cocktailShakerSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
+        //Set up variables to be used
         boolean swapped = true;
         int start = 0;
-        int end = whole.size();
+        int end = rawPixelList.size();
 
+        //While we have swapped values
         while (swapped) {
+
+            //Reset swapped to false
             swapped = false;
 
+            //Loop from the start of the list to the end of the list
             for (int i = start; i < end-1; i++) {
-                if (whole.get(i).getIndex() > whole.get(i+1).getIndex()) {
-                    pixelColor temp = whole.get(i);
-                    whole.set(i,whole.get(i+1));
-                    whole.set(i+1,temp);
+
+                //If the Color at i is greater than the Color at i+1
+                if (rawPixelList.get(i).getIndex() > rawPixelList.get(i+1).getIndex()) {
+
+                    //Swap the Colors and set swapped to true
+                    pixelColor temp = rawPixelList.get(i);
+                    rawPixelList.set(i,rawPixelList.get(i+1));
+                    rawPixelList.set(i+1,temp);
                     swapped = true;
-                    drawPixelBoard(g2d,whole);
+
+                    //Redraw the pixelBoard, play a sound, and wait
+                    drawPixelBoard(graphicalComponent,rawPixelList);
+                    soundComponent.makeSound(rawPixelList.get(i).getIndex());
                     wait(delay);
                 }
             }
 
+            //If we haven't swapped any values, break out of the loop
             if (!swapped) {
                 break;
             }
 
+            //If not set swapped back to false and lower the endpoint
             swapped = false;
-
             end = end-1;
 
+            //Loop from the endPoint - 1 to the start
             for (int i = end-1; i >= start; i--) {
-                if (whole.get(i).getIndex() > whole.get(i+1).getIndex()) {
-                    pixelColor temp = whole.get(i);
-                    whole.set(i,whole.get(i+1));
-                    whole.set(i+1,temp);
+
+                //If the Color at i is greater than the Color at i+1
+                if (rawPixelList.get(i).getIndex() > rawPixelList.get(i+1).getIndex()) {
+
+                    //Swap the Colors and set swapped to true
+                    pixelColor temp = rawPixelList.get(i);
+                    rawPixelList.set(i,rawPixelList.get(i+1));
+                    rawPixelList.set(i+1,temp);
                     swapped = true;
-                    drawPixelBoard(g2d,whole);
+
+                    //Redraw the pixelBoard, play a sound, and wait
+                    drawPixelBoard(graphicalComponent, rawPixelList);
+                    soundComponent.makeSound(rawPixelList.get(i).getIndex());
                     wait(delay);
                 }
             }
         }
     }
 
+    //Get's what the next gaps size should be for combSort
     public int getNextGap(int gap) {
+
+        //Set the gap to be whatever the current is times 10, divided by 13
         gap = (gap*10)/13;
+
+        //Return the max of gap and 1
         return Math.max(gap, 1);
     }
 
@@ -721,7 +746,27 @@ public class Visualizer extends  JFrame {
         wait(delay);
     }
 
-    public void bucketSort(ArrayList<pixelColor> whole, int numberOfBuckets, int size, Graphics g2d, int delay, int pixelSize) {
+    //BucketSort Methods
+
+    //Combine's two lists together
+    public void combineLists(ArrayList[] lists, Graphics g2d, int delay) {
+
+        //Create an arrayList of pixelColors to store both lists
+        ArrayList<pixelColor> whole = new ArrayList<>();
+
+        //For each list that is contained within the lists ArrayList
+        for(ArrayList<pixelColor> list: lists) {
+
+            //Copy the pixelColors into the main arrayList and redraw the pixelBoard
+            for(pixelColor p : list) {
+                whole.add(p);
+                wait(delay);
+                drawPixelBoard(g2d,whole);
+            }
+        }
+    }
+
+    public void bucketSort(ArrayList<pixelColor> whole, int numberOfBuckets, int size, Graphics g2d, MidiSoundPlayer soundComponent, int delay, int pixelSize) {
 
         int hash;
 
@@ -737,7 +782,7 @@ public class Visualizer extends  JFrame {
         combineLists(buckets, g2d,delay);
         int pixelsDrawn = 0;
         for(ArrayList<pixelColor> bucket : buckets) {
-            bubbleSort(bucket,g2d,delay, pixelsDrawn);
+            bubbleSort(bucket, g2d, soundComponent, delay, pixelsDrawn);
             pixelsDrawn+=(bucket.size()*pixelSize);
         }
 
@@ -801,7 +846,6 @@ public class Visualizer extends  JFrame {
 
             drawPixelBoard(g2d, whole);
             player.makeSound(whole.get(i).index);
-
             wait(delay);
         }
     }
