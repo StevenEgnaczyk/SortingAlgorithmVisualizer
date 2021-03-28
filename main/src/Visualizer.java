@@ -299,7 +299,7 @@ public class Visualizer extends  JFrame {
 
                 //Run Cocktail-Shaker Sort
                 System.out.println("Running Comb Sort");
-                combSort(rawPixelList, graphicalComponent, delay);
+                combSort(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Comb Sort");
                 break;
 
@@ -308,7 +308,7 @@ public class Visualizer extends  JFrame {
 
                 //Run Merge Sort
                 System.out.println("Running Merge Sort");
-                mergeSort(rawPixelList,0,rawPixelList.size()-1,graphicalComponent,delay);
+                mergeSort(rawPixelList, 0, rawPixelList.size()-1, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Bubble Sort");;
                 break;
 
@@ -326,7 +326,7 @@ public class Visualizer extends  JFrame {
 
                 //Run Quick Sort
                 System.out.println("Running Quick Sort");
-                quickSort(rawPixelList,0,rawPixelList.size()-1,graphicalComponent,delay);
+                quickSort(rawPixelList, 0, rawPixelList.size()-1, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Quick Sort");
                 break;
 
@@ -648,6 +648,8 @@ public class Visualizer extends  JFrame {
         }
     }
 
+    //CombSort methods
+
     //Get's what the next gaps size should be for combSort
     public int getNextGap(int gap) {
 
@@ -658,98 +660,150 @@ public class Visualizer extends  JFrame {
         return Math.max(gap, 1);
     }
 
-    public void combSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
-        int n = whole.size();
+    //Run CombSort
+    public void combSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-        int gap = n;
-
+        //Define variables to be used in the program
+        int pixelListSize = rawPixelList.size();
+        int gap = pixelListSize;
         boolean swapped = true;
 
+        //While the gap is not 1, or we've swapped Colors
         while (gap != 1 || swapped) {
-            gap = getNextGap(gap);
 
+            //Get the next gap and set swapped to false
+            gap = getNextGap(gap);
             swapped = false;
 
-            for (int i = 0; i < (n-gap); i++) {
-                if (whole.get(i).getIndex() > whole.get(i+gap).getIndex()) {
-                    pixelColor temp = whole.get(i);
+            //Loop through the list
+            for (int i = 0; i < (pixelListSize-gap); i++) {
 
-                    whole.set(i,whole.get(i+gap));
-                    drawPixelBoard(g2d, whole);
-                    wait(delay);
+                //If the Color at index i is greater than the Color at index i + gap
+                if (rawPixelList.get(i).getIndex() > rawPixelList.get(i + gap).getIndex()) {
 
-                    whole.set(i+gap, temp);
-                    drawPixelBoard(g2d, whole);
-                    wait(delay);
-
+                    //Swap the 2 Colors and set swapped to true
+                    pixelColor temp = rawPixelList.get(i);
+                    rawPixelList.set(i,rawPixelList.get(i+gap));
+                    rawPixelList.set(i+gap, temp);
                     swapped = true;
+
+                    //Redraw the pixelBoard, play a sound, and wait
+                    drawPixelBoard(graphicalComponent, rawPixelList);
+                    soundComponent.makeSound(rawPixelList.get(i).getIndex());
+                    wait(delay);
                 }
             }
         }
     }
 
-    public void mergeSort(ArrayList<pixelColor> whole, int l, int r, Graphics g2d, int delay) {
-        if (l < r) {
-            int m = (l + r) / 2;
+    //MergeSort methods
 
-            mergeSort(whole, l, m, g2d, delay);
-            mergeSort(whole, m + 1, r, g2d, delay);
+    //Run MergeSort
+    public void mergeSort(ArrayList<pixelColor> rawPixelList, int leftMostIndex, int rightMostIndex, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-            merge(whole, l, m, r, g2d, delay);
+        //If the leftMostIndex is less than the rightMostIndex
+        if (leftMostIndex < rightMostIndex) {
+
+            //Get the middle-most index
+            int middleMostIndex = (leftMostIndex + rightMostIndex) / 2;
+
+            //Recursively mergeSort the left and right halves of the list
+            mergeSort(rawPixelList, leftMostIndex, middleMostIndex, graphicalComponent, soundComponent, delay);
+            mergeSort(rawPixelList, middleMostIndex + 1, rightMostIndex, graphicalComponent, soundComponent, delay);
+
+            //Merge the two recursively sorted sublists
+            merge(rawPixelList, leftMostIndex, middleMostIndex, rightMostIndex, graphicalComponent, soundComponent, delay);
         }
     }
 
-    public void merge(ArrayList<pixelColor> whole, int l, int m, int r, Graphics g2d, int delay) {
+    //Nerge Command
+    public void merge(ArrayList<pixelColor> rawPixelList, int leftMostIndex, int middleMostIndex, int rightMostIndex, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-        wait(10);
-        int n1 = (m - l + 1);
-        int n2 = (r - m);
+        //Get the size of the left and right Color lists
+        int leftSize = (middleMostIndex - leftMostIndex + 1);
+        int rightSize = (rightMostIndex - middleMostIndex);
 
+        //Create new arrayLists to store the left and right halves of the list
         ArrayList<pixelColor> left = new ArrayList<>();
         ArrayList<pixelColor> right = new ArrayList<>();
 
-        for (int i = 0; i < n1; i++) {
-            left.add(whole.get(l + i));
+        //Copy the elements from the main pixelList into these 2 temporary arrayLists
+        for (int i = 0; i < leftSize; i++) {
+            left.add(rawPixelList.get(leftMostIndex + i));
         }
-        for (int j = 0; j < n2; j++) {
-            right.add(whole.get(m + 1 + j));
+        for (int j = 0; j < rightSize; j++) {
+            right.add(rawPixelList.get(middleMostIndex + 1 + j));
         }
 
-        int i = 0;
-        int j = 0;
-        int k = l;
+        //Create indexing variables
+        int leftIndexer = 0;
+        int rightIndexer = 0;
+        int mainIndexer = leftMostIndex;
 
-        while (i < n1 && j < n2) {
-            if (left.get(i).getIndex() <= right.get(j).getIndex()) {
-                whole.set(k, left.get(i));
-                drawPixelBoard(g2d, whole);
-                i++;
+        //Loop through until we hit the end of one of the temp lists
+        while (leftIndexer < leftSize && rightIndexer < rightSize) {
+
+            //If the Color in the left list is smaller than the color in the right list at this index
+            if (left.get(leftIndexer).getIndex() <= right.get(rightIndexer).getIndex()) {
+
+                //Add the color from the left list to the main list, play a sound, and redraw the pixelBoard
+                rawPixelList.set(mainIndexer, left.get(leftIndexer));
+                soundComponent.makeSound(left.get(leftIndexer).getIndex());
+                drawPixelBoard(graphicalComponent, rawPixelList);
+
+                //Increase the leftIndexer and wait
+                leftIndexer++;
+                wait(delay);
+
             } else {
-                whole.set(k, right.get(j));
-                drawPixelBoard(g2d, whole);
-                j++;
+
+                //Add the color from the right list to the main list, play a sound, and redraw the pixelBoard
+                rawPixelList.set(mainIndexer, right.get(rightIndexer));
+                soundComponent.makeSound(right.get(rightIndexer).getIndex());
+                drawPixelBoard(graphicalComponent, rawPixelList);
+
+                //Increase the rightIndexer and wait
+                rightIndexer++;
+                wait(delay);
             }
-            k++;
+
+            //Increase the mainIndexer
+            mainIndexer++;
         }
-        while (i < n1) {
-            whole.set(k, left.get(i));
-            drawPixelBoard(g2d, whole);
-            i++;
-            k++;
+
+        //While there are still elements left in the temp left list
+        while (leftIndexer < leftSize) {
+
+            //Copy them to the main list, play a sound, and redraw the pixelBoard
+            rawPixelList.set(mainIndexer, left.get(leftIndexer));
+            soundComponent.makeSound(left.get(leftIndexer).getIndex());
+            drawPixelBoard(graphicalComponent, rawPixelList);
+
+            //Increase the left and main indexes and wait
+            leftIndexer++;
+            mainIndexer++;
+            wait(delay);
         }
-        while (j < n2) {
-            whole.set(k, right.get(j));
-            drawPixelBoard(g2d, whole);
-            j++;
-            k++;
+
+        //While there are still elements left in the temp right list
+        while (rightIndexer < rightSize) {
+
+            //Copy them into the main list, play a sound, and redraw the pixelBoard
+            rawPixelList.set(mainIndexer, right.get(rightIndexer));
+            soundComponent.makeSound(right.get(rightIndexer).getIndex());
+            drawPixelBoard(graphicalComponent, rawPixelList);
+
+            //Increase the right and main indexes and wait
+            rightIndexer++;
+            mainIndexer++;
+            wait(delay);
         }
-        wait(delay);
     }
 
     //BucketSort Methods
 
     //Combine's two lists together
-    public void combineLists(ArrayList[] lists, Graphics g2d, int delay) {
+    public void combineLists(ArrayList[] lists, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
         //Create an arrayList of pixelColors to store both lists
         ArrayList<pixelColor> whole = new ArrayList<>();
@@ -757,82 +811,133 @@ public class Visualizer extends  JFrame {
         //For each list that is contained within the lists ArrayList
         for(ArrayList<pixelColor> list: lists) {
 
-            //Copy the pixelColors into the main arrayList and redraw the pixelBoard
+            //Copy the pixelColors into the main arrayList, redraw the pixelBoard, and play a sound
             for(pixelColor p : list) {
                 whole.add(p);
                 wait(delay);
-                drawPixelBoard(g2d,whole);
+                soundComponent.makeSound(p.getIndex());
+                drawPixelBoard(graphicalComponent,whole);
             }
         }
     }
 
-    public void bucketSort(ArrayList<pixelColor> whole, int numberOfBuckets, int size, Graphics g2d, MidiSoundPlayer soundComponent, int delay, int pixelSize) {
+    //Get's an items correct hash value
+    public int hash (int colorIndex, int maxIndex, int numBuckets) {
 
+        //Calculate the relative location of the Color in relation to the max value
+        float value = ((float)colorIndex/maxIndex);
+
+        //Calculate which bucket that Color should then be placed in and return it
+        return (int)(value * numBuckets);
+
+    }
+
+    //Run's bucketSort
+    public void bucketSort(ArrayList<pixelColor> rawPixelList, int numberOfBuckets, int pixelListSize, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay, int pixelSize) {
+
+        //Create an integer to store the hash value
         int hash;
 
+        //Create an arrayList to store the buckets
         ArrayList[] buckets = new ArrayList[numberOfBuckets];
+
+        //Loop through the number of buckets and make an arrayList for each
         for (int i = 0; i < numberOfBuckets; i++) {
             buckets[i] = new ArrayList();
         }
 
-        for(pixelColor p : whole) {
-            hash = hash(p.getIndex(), (size/pixelSize), numberOfBuckets);
-            buckets[hash].add(p);
+        //Loop through the rawPixelList
+        for(pixelColor color : rawPixelList) {
+
+            //Get the hash value for each color and add it to that particular arrayList
+            hash = hash(color.getIndex(), (pixelListSize/pixelSize), numberOfBuckets);
+            buckets[hash].add(color);
         }
-        combineLists(buckets, g2d,delay);
+
+        //Combine all of the lists into one
+        combineLists(buckets, graphicalComponent, soundComponent, delay);
+
+        //Create a variable to store the number of pixels drawn so far
         int pixelsDrawn = 0;
+
+        //For each Bucket, bubbleSort the contents of that bucket
         for(ArrayList<pixelColor> bucket : buckets) {
-            bubbleSort(bucket, g2d, soundComponent, delay, pixelsDrawn);
-            pixelsDrawn+=(bucket.size()*pixelSize);
+
+            //Run bubbleSort with an offset and increase the pixelsDrawn
+            bubbleSort(bucket, graphicalComponent, soundComponent, delay, pixelsDrawn);
+            pixelsDrawn += (bucket.size()*pixelSize);
         }
 
-        int i = 0;
+        //Set up an indexing variable
+        int mainListIndexer = 0;
 
+        //For each bucket
         for (ArrayList<pixelColor> bucket : buckets) {
-            for (pixelColor p : bucket) {
-                whole.set(i++,p);
-            }
-        }
-        drawPixelBoard(g2d, whole, pixelsDrawn);
-    }
+            //For each pixel in that bucket
+            for (pixelColor pixelColor : bucket) {
 
-    public int hash (int num, int max, int numBuckets) {
-        float value = (float)num/max;
-        System.out.println(value);
-        int bucketNum = (int)(value * numBuckets);
-        System.out.println(bucketNum);
-        return bucketNum;
-
-    }
-
-    public int partition(ArrayList<pixelColor> whole, int low, int high, Graphics g2d, int delay) {
-        pixelColor pivot = whole.get(high);
-        int i = (low-1);
-        for (int j = low; j < high; j++) {
-            if (whole.get(j).getIndex() < pivot.getIndex()) {
-                i++;
-                pixelColor temp = whole.get(i);
-                whole.set(i, whole.get(j));
-                whole.set(j, temp);
-                drawPixelBoard(g2d,whole);
+                //Re-set that Color to its correct position in the main list
+                rawPixelList.set(mainListIndexer++,pixelColor);
             }
         }
 
-        pixelColor temp = whole.get(i+1);
-        whole.set(i+1,whole.get(high));
-        whole.set(high,temp);
-        drawPixelBoard(g2d,whole);
+        //Redraw the pixelBoard
+        drawPixelBoard(graphicalComponent, rawPixelList, pixelsDrawn);
+    }
+
+    //QuickSort Methods
+    public int partition(ArrayList<pixelColor> rawPixelList, int low, int high, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
+
+        //Define the pivot pixelColor
+        pixelColor pivot = rawPixelList.get(high);
+
+        //Define the lowest index location
+        int lowIndex = low;
+        int highIndex = high;
+
+        while (true) {
+
+            while (rawPixelList.get(lowIndex).getIndex() < pivot.getIndex()) {
+                lowIndex++;
+            }
+
+            while (rawPixelList.get(highIndex).getIndex() > pivot.getIndex()) {
+                highIndex--;
+            }
+
+            if (lowIndex >= highIndex) {
+                break;
+            } else {
+
+                pixelColor temp = rawPixelList.get(lowIndex);
+                rawPixelList.set(lowIndex, rawPixelList.get(highIndex));
+                rawPixelList.set(highIndex, temp);
+
+                soundComponent.makeSound(temp.getIndex());
+                drawPixelBoard(graphicalComponent,rawPixelList);
+                wait(delay);
+            }
+        }
+
+        pixelColor temp = rawPixelList.get(lowIndex);
+        rawPixelList.set(lowIndex, pivot);
+        rawPixelList.set(pivot.getIndex(), temp);
+
+        soundComponent.makeSound(temp.getIndex());
+        drawPixelBoard(graphicalComponent,rawPixelList);
         wait(delay);
 
-        return (i+1);
+        return lowIndex;
+
     }
 
-    public void quickSort (ArrayList<pixelColor> whole, int low, int high, Graphics g2d, int delay) {
-        if (low < high) {
-            int pi = partition(whole,low,high, g2d, delay);
+    public void quickSort (ArrayList<pixelColor> rawPixelList, int low, int high, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-            quickSort(whole,low,pi-1, g2d, delay);
-            quickSort(whole,pi+1,high, g2d, delay);
+        if (low < high) {
+            int pi = partition(rawPixelList,low,high, graphicalComponent, soundComponent, delay);
+
+            quickSort(rawPixelList,low,pi-1, graphicalComponent, soundComponent, delay);
+            quickSort(rawPixelList,pi+1,high, graphicalComponent, soundComponent, delay);
         }
     }
 
