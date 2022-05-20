@@ -130,7 +130,7 @@ public class Visualizer extends  JFrame {
                         Collections.shuffle(rawPixelList);
                         soundComponent.makeSound(rawPixelList.get(0).getIndex());
                         drawPixelBoard(graphicsComponent2D, rawPixelList);
-                        wait(delay);
+                        wait(100);
                     }
                     break;
 
@@ -344,7 +344,7 @@ public class Visualizer extends  JFrame {
 
                 //Run Heap Sort
                 System.out.println("Running Heap Sort");
-                heapSort(rawPixelList, graphicalComponent, delay);
+                heapSort(rawPixelList, graphicalComponent, soundComponent, delay);
                 System.out.println("List sorted using Heap Sort");
                 break;
 
@@ -650,7 +650,7 @@ public class Visualizer extends  JFrame {
 
     //CombSort methods
 
-    //Get's what the next gaps size should be for combSort
+    //Returns what the next gaps size should be for combSort
     public int getNextGap(int gap) {
 
         //Set the gap to be whatever the current is times 10, divided by 13
@@ -886,6 +886,8 @@ public class Visualizer extends  JFrame {
     }
 
     //QuickSort Methods
+
+    //Partition
     public int partition(ArrayList<pixelColor> rawPixelList, int low, int high, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
         //Define the pivot pixelColor
@@ -897,125 +899,174 @@ public class Visualizer extends  JFrame {
 
         while (true) {
 
+            //Move the lowIndex up until we hit a color greater than the Pivot Color
             while (rawPixelList.get(lowIndex).getIndex() < pivot.getIndex()) {
                 lowIndex++;
             }
 
+            //Move the highIndex down until we hit a color less than the Pivot Color
             while (rawPixelList.get(highIndex).getIndex() > pivot.getIndex()) {
                 highIndex--;
             }
 
+            //If the lowIndex has crossed the highIndex, break out of the loop
             if (lowIndex >= highIndex) {
                 break;
             } else {
 
+                //Swap the Colors at the lowIndex and highIndex
                 pixelColor temp = rawPixelList.get(lowIndex);
                 rawPixelList.set(lowIndex, rawPixelList.get(highIndex));
                 rawPixelList.set(highIndex, temp);
 
+                //Play a sound, redraw the pixelBoard, and wait
                 soundComponent.makeSound(temp.getIndex());
                 drawPixelBoard(graphicalComponent,rawPixelList);
                 wait(delay);
             }
         }
 
+        //Swap the Color at the lowIndex with the Color at the Pivot
         pixelColor temp = rawPixelList.get(lowIndex);
         rawPixelList.set(lowIndex, pivot);
         rawPixelList.set(pivot.getIndex(), temp);
 
+        //Play a sound, redraw the pixelBoard, and wait
         soundComponent.makeSound(temp.getIndex());
         drawPixelBoard(graphicalComponent,rawPixelList);
         wait(delay);
 
+        //Return the lowIndex
         return lowIndex;
 
     }
 
+    //Run's quickSort
     public void quickSort (ArrayList<pixelColor> rawPixelList, int low, int high, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
+        //If low is less than high (base case)
         if (low < high) {
+
+            //Partition the list into two sections separated by pi
             int pi = partition(rawPixelList,low,high, graphicalComponent, soundComponent, delay);
 
+            //QuickSort the left and right halves of the list respectively
             quickSort(rawPixelList,low,pi-1, graphicalComponent, soundComponent, delay);
             quickSort(rawPixelList,pi+1,high, graphicalComponent, soundComponent, delay);
         }
     }
 
-    public void compAndSwap(ArrayList<pixelColor> whole, int i, int j, int dir, Graphics g2d, MidiSoundPlayer player, int delay) {
+    //Comp and Swap
+    public void compAndSwap(ArrayList<pixelColor> rawPixelList, int leftColor, int rightColor, int dir, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
+
+        //Get the direction boolean
         boolean direction = (dir == 1);
-        if (direction == (whole.get(i).getIndex() >= whole.get(j).getIndex())) {
 
-            pixelColor temp = whole.get(i);
-            whole.set(i,whole.get(j));
-            whole.set(j, temp);
+        //If the direction boolean disagrees with the current ordering of colors
+        if (direction == (rawPixelList.get(leftColor).getIndex() >= rawPixelList.get(rightColor).getIndex())) {
 
-            drawPixelBoard(g2d, whole);
-            player.makeSound(whole.get(i).index);
+            //Swap the Colors at the left and right Indexes
+            pixelColor temp = rawPixelList.get(leftColor);
+            rawPixelList.set(leftColor,rawPixelList.get(rightColor));
+            rawPixelList.set(rightColor, temp);
+
+            //Play a sound, redraw the board, and wait
+            soundComponent.makeSound(rawPixelList.get(leftColor).index);
+            drawPixelBoard(graphicalComponent, rawPixelList);
             wait(delay);
         }
     }
 
-    public void bitonicMerge(ArrayList<pixelColor> whole, int low, int cnt, int dir, Graphics g2d, MidiSoundPlayer player, int delay) {
-        if (cnt > 1) {
-            int k = cnt/2;
+    //BitonicMerge
+    public void bitonicMerge(ArrayList<pixelColor> rawPixelList, int low, int count, int dir, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
+
+        //If the count of elements is greater than 1
+        if (count > 1) {
+
+            //Set k equal to the midpoint of elements
+            int k = count/2;
+
+            //For each element in this range from low to low + k
             for (int i = low; i < (low+k); i++)
-                compAndSwap(whole,i,i+k,dir, g2d, player, delay);
-            bitonicMerge(whole,low,k,dir,g2d, player, delay);
-            bitonicMerge(whole,low+k,k,dir,g2d, player, delay);
+
+                //Compare and swap the elements at i with i + k
+                compAndSwap(rawPixelList,i,i+k,dir, graphicalComponent, soundComponent, delay);
+
+            //Bitonically Merge the left and right halves of the list
+            bitonicMerge(rawPixelList, low, k, dir, graphicalComponent, soundComponent, delay);
+            bitonicMerge(rawPixelList, low+k, k, dir, graphicalComponent, soundComponent, delay);
         }
     }
 
-    void bitonicSort(ArrayList<pixelColor> whole, int low, int cnt, int dir, Graphics g2d, MidiSoundPlayer player, int delay) {
-        if (cnt > 1) {
-            int k = cnt/2;
-            bitonicSort(whole, low, k, 1, g2d, player, delay);
-            bitonicSort(whole, low+k, k, 0, g2d, player, delay);
-            bitonicMerge(whole,low,cnt,dir,g2d, player, delay);
+    //BitonicSort
+    void bitonicSort(ArrayList<pixelColor> rawPixelList, int low, int count, int dir, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
+
+        //If count is greater than 1 (base case)
+        if (count > 1) {
+
+            //Set k equal to the midpoint of elements
+            int k = count/2;
+
+            //Sort the left and right halves of the list
+            bitonicSort(rawPixelList, low, k, 1, graphicalComponent, soundComponent, delay);
+            bitonicSort(rawPixelList, low+k, k, 0, graphicalComponent, soundComponent, delay);
+
+            //Merge the left and right halves of the list
+            bitonicMerge(rawPixelList,low,count,dir,graphicalComponent, soundComponent, delay);
         }
     }
 
-    public void heapSort(ArrayList<pixelColor> whole, Graphics g2d, int delay) {
-        int n = whole.size();
+    //HeapSort
+    public void heapSort(ArrayList<pixelColor> rawPixelList, Graphics graphicalComponent, MidiSoundPlayer soundComponent, int delay) {
 
-        for (int i = (n/2 -1); i >= 0; i--) {
-            heapify(whole, n, i, g2d, delay);
+        //Get the size of the pixelList
+        int pixelListSize = rawPixelList.size();
+
+        //Loop from the middle of the list down
+        for (int i = (pixelListSize/2 - 1); i >= 0; i--) {
+
+            //Heapify the data contained within
+            heapify(rawPixelList, pixelListSize, i, soundComponent, graphicalComponent, delay);
         }
 
-        for (int i = n-1; i > 0; i--) {
-            pixelColor temp = whole.get(0);
-            whole.set(0, whole.get(i));
+        for (int i = pixelListSize-1; i > 0; i--) {
+
+            pixelColor temp = rawPixelList.get(0);
+            rawPixelList.set(0, rawPixelList.get(i));
+            rawPixelList.set(i,temp);
+
+            soundComponent.makeSound(temp.getIndex());
+            drawPixelBoard(graphicalComponent, rawPixelList);
             wait(delay);
-            drawPixelBoard(g2d, whole);
-            whole.set(i,temp);
-            wait(delay);
-            drawPixelBoard(g2d, whole);
 
-            heapify(whole, i, 0, g2d, delay);
+            heapify(rawPixelList, i, 0, soundComponent, graphicalComponent, delay);
         }
     }
 
-    public void heapify(ArrayList<pixelColor> whole, int n, int i, Graphics g2d, int delay) {
+    public void heapify(ArrayList<pixelColor> rawPixelList, int n, int i, MidiSoundPlayer soundComponent, Graphics graphicalComponent, int delay) {
         int largest = i;
         int l = (2*i) + 1;
         int r = (2*i) + 2;
 
-        if (l < n && whole.get(l).getIndex() > whole.get(largest).getIndex()) {
+        if (l < n && rawPixelList.get(l).getIndex() > rawPixelList.get(largest).getIndex()) {
             largest = l;
         }
 
-        if (r < n && whole.get(r).getIndex() > whole.get(largest).getIndex()) {
+        if (r < n && rawPixelList.get(r).getIndex() > rawPixelList.get(largest).getIndex()) {
             largest = r;
         }
 
         if (largest != i) {
-            pixelColor swap = whole.get(i);
-            whole.set(i,whole.get(largest));
-            drawPixelBoard(g2d, whole);
+            pixelColor swap = rawPixelList.get(i);
+            rawPixelList.set(i,rawPixelList.get(largest));
+
+            rawPixelList.set(largest,swap);
+
+            soundComponent.makeSound(swap.getIndex());
+            drawPixelBoard(graphicalComponent, rawPixelList);
             wait(delay);
-            whole.set(largest,swap);
-            drawPixelBoard(g2d, whole);
-            wait(delay);
-            heapify(whole,n,largest, g2d, delay);
+
+            heapify(rawPixelList,n,largest, soundComponent, graphicalComponent, delay);
         }
     }
 

@@ -66,9 +66,6 @@ public class pixelList {
         int lastPixelGreen = pList.get(pList.size()-1).getG();
         float leftOVerPixelsAddValue = ((float)(255-lastPixelGreen)/(float)leftOverPixels);
 
-        System.out.println(lastPixelGreen);
-        System.out.println(leftOVerPixelsAddValue);
-
         while (leftOverPixels > 1) {
             lastPixelGreen += (int)leftOVerPixelsAddValue;
             pList.add(new pixelColor(255,lastPixelGreen,255,index,pixelHeight,pixelWidth));
